@@ -2,81 +2,47 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>The Boss AI – Dashboard</title>
+  <title>{{ profile.username }}'s Dashboard</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #0f172a;
+      background: linear-gradient(to right, #0f172a, #1e293b);
       color: white;
       margin: 0;
-      padding: 0;
-    }
-    header {
-      background: #1e293b;
-      padding: 1rem;
-      text-align: center;
-      font-size: 1.5rem;
-      color: #38bdf8;
-    }
-    .dashboard {
       padding: 2rem;
     }
-    .goal {
-      background: #1e293b;
-      margin-bottom: 1rem;
-      padding: 1rem;
-      border-radius: 10px;
-      box-shadow: 0px 4px 10px rgba(0,0,0,0.3);
-    }
-    .goal h3 {
-      margin: 0;
+    h1 {
       color: #38bdf8;
     }
-    .tasks {
-      list-style: none;
-      padding: 0;
-      margin-top: 0.5rem;
+    .goal-box {
+      background: #1e293b;
+      padding: 1.5rem;
+      border-radius: 10px;
+      box-shadow: 0px 8px 20px rgba(0,0,0,0.3);
+      margin-bottom: 1rem;
     }
-    .tasks li {
-      margin: 0.3rem 0;
-      display: flex;
-      align-items: center;
+    .goal-title {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #38bdf8;
     }
-    .tasks input[type="checkbox"] {
-      margin-right: 0.6rem;
+    .boss {
+      font-size: 0.9rem;
+      color: #94a3b8;
     }
   </style>
 </head>
 <body>
-  <header>
-    Welcome
-  </header>
+  <h1>Welcome,  👋</h1>
+  <p>Your current goals:</p>
 
-  <div class="dashboard">
-    <h2>Your Goals & Tasks</h2>
-
-    {% if profile.goals %}
-      {% for goal in profile.goals %}
-      <div class="goal">
-        <h3>{{ goal.title }}</h3>
-        <p><strong>Boss:</strong> {{ goal.boss }}</p>
-        <ul class="tasks">
-          {% if goal.tasks %}
-            {% for task in goal.tasks %}
-            <li>
-              <input type="checkbox">
-              {{ task.description }}
-            </li>
-            {% endfor %}
-          {% else %}
-            <li><em>No tasks yet.</em></li>
-          {% endif %}
-        </ul>
-      </div>
-      {% endfor %}
-    {% else %}
-      <p><em>No goals yet. Add some from your profile.</em></p>
-    {% endif %}
+  {% for goal in goals %}
+  <div class="goal-box">
+    <div class="goal-title">{{ goal.title }}</div>
+    <div class="boss">Boss: {{ goal.boss }}</div>
   </div>
+  {% endfor %}
+
+  <p style="margin-top:2rem;">More AI-powered features coming soon...</p>
 </body>
 </html>

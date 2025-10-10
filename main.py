@@ -39,7 +39,6 @@ templates = Jinja2Templates(directory="html")
 """
 Routers
 """
-
 app.include_router(profile.router)
 app.include_router(goals.router)
 app.include_router(dashboard.router)
@@ -50,5 +49,6 @@ Root Route
 @app.get("/")#
 def read_root(request: Request):
     return templates.TemplateResponse("profile.html", {"request": request})
+
 
 

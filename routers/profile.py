@@ -25,7 +25,6 @@ from sqlalchemy.exc import IntegrityError
 app=FastAPI()
 router = APIRouter(prefix="/profiles", tags=["Profiles"])
 
-
 class GoalRequest(BaseModel):
     title: str
     boss: str
@@ -37,42 +36,44 @@ class ProfileRequest(BaseModel):
 
 # get db session
 
-def get_db():
     """Dependency function that creates a DB session for each request."""
+def get_db():
     db = database.SessionLocal()
     try:
         yield db
     finally:
         db.close()
 
-
-    """ creates a new user profile with one or more goals.
-    each goal is saved to the database and can later trigger AI task gen"""
 @router.post("/", response_model=schemas.Profile)
 def create_profile(request: ProfileRequest, db: Session = Depends(get_db)):
 
+    """ creates a new user profile with one or more goals.
+    each goal is saved to the database and can later trigger AI task gen"""
 
-    db_profile = (db.query(models.Profile).filter(models.Profile.username == request.username).first())
-    if not db_profile:
-
+    try:
         db_profile = models.Profile(username=request.username)
         db.add(db_profile)
         db.commit()
         db.refresh(db_profile)
 
-    for goal_data in request.goals:
-        db_goal = models.Goal(
-            title=goal_data.title,
-            boss=goal_data.boss,
-            profile_id=db_profile.id
-        )
-        db.add(db_goal)
-        db.commit()
-        db.refresh(db_goal)
+        for goal_data in request.goals:
+            db_goal = models.Goal(
+                title=goal_data.title,
+                boss=goal_data.boss,
+                profile_id=db_profile.id
+            )
+            db.add(db_goal)
+            db.commit()
+            db.refresh(db_goal)
 
-    return RedirectResponse(
-        url=f"/dashboard/{db_profile.id}", status_code=303
-    )
+            generate_tasks_from_goal(db_goal, db)
+
+        return RedirectResponse(
+            url=f"/dashboard/{db_profile.id}", status_code=303
+        )
+
+    except IntegrityError:
+        raise HTTPException(status_code=400, detail="username already exists.")
 
 
 @router.get("/{profile_id}", response_model=schemas.Profile)
@@ -81,7 +82,12 @@ def read_profile(profile_id: int, db: Session = Depends(get_db)):
     Fetch a profile by ID, including its related goals.
     """
 
-    db_profile = db.query(models.Profile).filter(models.Profile.id == profile_id).first()
+    db_profile = (
+        db.query(models.Profile)
+        .filter(models.Profile.id == profile_id)
+        .first()
+    )
     if db_profile is None:
         raise HTTPException(status_code=404, detail="Profile not found")
+
     return db_profile

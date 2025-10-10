@@ -36,15 +36,12 @@
       margin: 0.5rem 0 0.2rem;
       font-weight: bold;
     }
-    input, select, textarea {
+    input, select {
       width: 100%;
       padding: 0.6rem;
       margin-bottom: 1rem;
       border: none;
       border-radius: 6px;
-    }
-    textarea {
-      resize: none;
     }
     button {
       background: #38bdf8;
@@ -59,55 +56,64 @@
     button:hover {
       background: #0284c7;
     }
-  </style>
-</head>
-<body>
-  <div class="setup-box">
-    <h1>Welcome to The Boss</h1>
-    <p style="text-align:center;">Let’s set up your profile. Start with your username and your first goal.</p>
+    </style>
+  </head>
+  <body>
+    <div class="setup-box">
+      <h1>Welcome to The Boss</h1>
+      <p style="text-align:center;">Let’s set up your profile. Start with your username and your first goal.</p>
 
-    <form action="/profiles" method="post">
-  <!-- Username -->
-  <input type="text" name="username" placeholder="Enter your username" required>
+      <form id="profile-form">
+        <!-- Username -->
+        <input type="text" id="username" name="username" placeholder="Enter your username" required>
+        <!-- Goal -->
+        <input type="text" id="goal-title" name="goal-title" placeholder="Enter your goal" required>
 
-  <!-- Goal -->
-  <input type="text" name="goal1" placeholder="Enter your goal" required>
+        <!-- Boss Choice -->
+        <label for="boss">Choose a Boss:</label>
+        <select id="boss">
+          <option value="default">Default Boss</option>
+          <option value="funny">Funny Boss</option>
+          <option value="serious">Serious Boss</option>
+        </select>
 
-  <!-- Boss Choice -->
-  <label for="boss1">Choose a Boss:</label>
-  <select name="boss1" id="boss1">
-    <option value="default">Default Boss</option>
-    <option value="funny">Funny Boss</option>
-    <option value="serious">Serious Boss</option>
-  </select>
+        <button type="submit">Submit </button>
+      </form>
+    </div>
 
-  <button type="submit">Submit and Get Started</button>
-</form>
+    <script>
+      document.getElementById("profile-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
 
-<script>
-document.getElementById("profile-form").addEventListener("submit", async (e) => {
-  e.preventDefault(); // prevent normal form submission
+        const username = document.getElementById("username").value;
+        const goalTitle = document.getElementById("goal-title").value;
+        const boss = document.getElementById("boss").value;
 
-  const username = document.getElementById("username").value;
-  const goalTitle = document.getElementById("goal-title").value;
-  const boss = document.getElementById("boss").value;
+        const payload = {
+          username: username,
+          goals: [
+            {title: goalTitle, boss: boss}
+          ]
+        };
 
-  const response = await fetch("/profiles/", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      username: username,
-      goals: [{ title: goalTitle, boss: boss }]
-    }),
-  });
+        const response = await fetch("/profiles/", {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify(payload),
+        });
 
-  if (response.redirected) {
-    window.location.href = response.url; // go to dashboard
-  } else {
-    const data = await response.json();
-    alert("Error: " + JSON.stringify(data));
-  }
-});
-</script>
+        if (response.redirected) {
+          window.location.href = response.url; // go to dashboard
+        } else {
+          const data = await response.json();
+          console.log("server response:", data);
+          if (response.ok) {
+            window.location.href = `/dashboard/${data.id}`;
+          } else {
+            alert("Error: " + JSON.stringify(data));
+          }
+        }
+      });
+    </script>
+  </body>
+</html>

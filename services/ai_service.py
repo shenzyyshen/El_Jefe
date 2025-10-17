@@ -13,8 +13,8 @@ load_dotenv()
 #Initialize openAI using api from env
 import os
 from openai import OpenAI
+from routers import models
 
-load_dotenv()
 
 api_key = os.getenv("OPEN_API_KEY")
 if not api_key:
@@ -32,8 +32,10 @@ def generate_tasks_from_goal(goal, db: Session):
         returns: a list of task description suggested by the ai
     """
 
+    prompt = f"Generate 3 tasks to help achieve this goal: {goal.title}"
+
     response = client.chat.completions.create(
-        model="gtp-4o-mini",
+        model="gpt-4o-mini",
         messages=[
             {"role": "system",
             "content": "you are the boss, through my goals, create small actionable tasks"
@@ -42,5 +44,15 @@ def generate_tasks_from_goal(goal, db: Session):
             "content": f"Break this goal into 3-5 clear tasks: {goal.title}"}
         ]
     )
+
+    task_text = response.choices[0].message.content.strip().split("\n")
+
+    for task_text in task_text:
+        new_task = models.Task(description=task_text.strip(), goal_id=goal.id)
+        db.add(new_task)
+
+    db.commit()
+
+
 
 

@@ -19,8 +19,9 @@ includes routers for authentic, profile managment.
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from fastapi.responses import HTMLResponse
 from core import database
-from routers import models, profile, goals, dashboard
+from routers import models, login_signup, goals, dashboard, tasks
 
 """
 DB Table 
@@ -39,16 +40,18 @@ templates = Jinja2Templates(directory="html")
 """
 Routers
 """
-app.include_router(profile.router)
+app.include_router(login_signup.router)
 app.include_router(goals.router)
 app.include_router(dashboard.router)
+
+app.include_router(tasks.router)
 
 """
 Root Route
 """
-@app.get("/")#
+@app.get("/", response_class=HTMLResponse)
 def read_root(request: Request):
-    return templates.TemplateResponse("profile.html", {"request": request})
+    return templates.TemplateResponse("login.html", {"request": request})
 
 
 

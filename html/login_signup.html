@@ -1,0 +1,111 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Boss AI | Login or Sign Up</title>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(to right, #0f172a, #1e293b);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .login-box {
+      background: #1e293b;
+      padding: 2rem;
+      border-radius: 15px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.3);
+      width: 350px;
+      text-align: center;
+    }
+
+    h1 {
+      color: #38bdf8;
+      font-size: 1.8rem;
+      margin-bottom: 1rem;
+    }
+
+    input {
+      width: 90%;
+      padding: 0.8rem;
+      margin: 0.5rem 0;
+      border: none;
+      border-radius: 8px;
+      background-color: #334155;
+      color: white;
+      font-size: 1rem;
+    }
+
+    input:focus {
+      outline: 2px solid #38bdf8;
+    }
+
+    button {
+      width: 95%;
+      padding: 0.8rem;
+      margin-top: 1rem;
+      border: none;
+      border-radius: 8px;
+      background-color: #38bdf8;
+      color: white;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background-color: #0284c7;
+    }
+
+    p {
+      margin-top: 1rem;
+      color: #94a3b8;
+      font-size: 0.9rem;
+    }
+
+    .error {
+      color: #f87171;
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="login_signup-box">
+    <h1>Welcome to Boss AI</h1>
+    <form id="login_signupForm" method="POST" action="/login_signup/auth">
+      <input type="text" id="username" name="username" placeholder="Username" required />
+      <input type="password" id="password" name="password" placeholder="Password" required />
+      <button type="submit">Login / Sign Up</button>
+    </form>
+    <p>Enter your details to log in — or sign up automatically.</p>
+    <div class="error" id="error-message"></div>
+  </div>
+
+  <script>
+    const form = document.getElementById("login_signupForm");
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const formData = new FormData(form);
+      const response = await fetch("/login_signup/auth", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (response.redirected) {
+        window.location.href = response.url; // redirect to dashboard
+      } else {
+        const data = await response.json();
+        document.getElementById("error-message").innerText = data.detail || "Login failed.";
+      }
+    });
+  </script>
+</body>
+</html>

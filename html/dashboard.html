@@ -30,6 +30,25 @@
       font-size: 0.9rem;
       color: #94a3b8;
     }
+    .tasks{
+      margin-left:1.5rem;
+    }
+    button{
+      background: #38bdf8;
+      border: none;
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      margin: 0.3rem;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #0284c7
+    }
+    .completed {
+      text-decoration: line-through;
+      opacity: 0.6;
+    }
   </style>
 </head>
 <body>
@@ -40,9 +59,51 @@
   <div class="goal-box">
     <div class="goal-title">{{ goal.title }}</div>
     <div class="boss">Boss: {{ goal.boss }}</div>
+
+    <div class="tasks">
+      {% if goal.tasks %}
+        {% for task in goal.tasks %}
+          <div class="task" id="task-{{ task.id }}">
+            <p>{{ task.description }}</p>
+            <button onclick="editTask({{ task.id }})">Edit</button>
+            <button onclick="completeTask({{ task.id }})">Complete</button>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p>No tasks yet for this goal.</p>
+      {% endif %}
+    </div>
   </div>
-  {% endfor %}
+{% endfor %}
 
   <p style="margin-top:2rem;">More AI-powered features coming soon...</p>
+
+  <script>
+    async function editTask(taskId) {
+      const newDescription = prompt("Edit your task description:");
+      if (!newDescription) return;
+      const res = await fetch(`/tasks/${taskId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ description: newDescription }),
+      });
+      if (res.ok) {
+        location.reload();
+      } else {
+        alert("Failed to update task");
+      }
+    }
+
+    async function completeTask(taskId) {
+      const res = await fetch(`/tasks/${taskId}/complete`, { method: "PATCH" });
+      if (res.ok) {
+        location.reload();
+      } else {
+        alert("Failed to complete task");
+      }
+    }
+  </script>
 </body>
 </html>
+
+

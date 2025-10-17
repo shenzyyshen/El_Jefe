@@ -3,12 +3,12 @@
 defines database models for el chefe
 
 each class = database table:
-    -profile: stores user information (username, goals).
-    -goal: stores goals linked to profiles.
+    -user: stores user information (username, goals).
+    -goal: stores goals linked to users.
     -task: stores Ai gen task linked to goals.
 
 Relationship-
-    -one profile - many goals
+    -one user - many goals
     -one goal - many task
 """
 from sqlalchemy import Column, Integer, String, ForeignKey
@@ -16,22 +16,23 @@ from sqlalchemy.orm import relationship
 from core.database import Base
 
 
-#profile table
-"""Stores user profile information"""
+#user table
+"""Stores user user information"""
 
-class Profile(Base):
-    __tablename__= "profiles"
+class User(Base):
+    __tablename__= "users"
 
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, index=True)
+    password = Column(String, nullable=False)
 
-    goals = relationship("Goal", back_populates="profile", cascade="all, delete-orphan")
+    goals = relationship("Goal", back_populates="user", cascade="all, delete-orphan")
 
     """(__repr__)special method/dunder method: to return a string representation of an object 
         mostly for debugging/logging looks nice 
     """
     def __repr__(self):
-        return f"<Profile(username={self.username}>"
+        return f"<user(username={self.username}>"
 
 #goal table
 class Goal(Base):
@@ -41,9 +42,9 @@ class Goal(Base):
     title =Column(String, index=True)
     description =Column(String, nullable=True)
     boss = Column(String, default="default") #stores selected boss
-    profile_id = Column(Integer, ForeignKey("profiles.id"))
+    user_id = Column(Integer, ForeignKey("users.id"))
 
-    profile = relationship("Profile", back_populates="goals")
+    user = relationship("User", back_populates="goals")
     tasks = relationship("Task", back_populates="goal", cascade="all, delete-orphan")
 
 #task table

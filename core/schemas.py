@@ -66,3 +66,6 @@ class Task(TaskBase):
     class Config:
         from_attributes = True
 
+class TaskUpdate(TaskBase):
+    description: str
+

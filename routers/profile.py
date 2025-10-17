@@ -44,36 +44,37 @@ def get_db():
     finally:
         db.close()
 
+    """ creates a new user profile  (should be able to create profile without goal (with one or more goals.
+    each goal is saved to the database and can later trigger AI task gen"""
 @router.post("/", response_model=schemas.Profile)
 def create_profile(request: ProfileRequest, db: Session = Depends(get_db)):
-
-    """ creates a new user profile with one or more goals.
-    each goal is saved to the database and can later trigger AI task gen"""
-
-    try:
-        db_profile = models.Profile(username=request.username)
-        db.add(db_profile)
-        db.commit()
-        db.refresh(db_profile)
-
-        for goal_data in request.goals:
-            db_goal = models.Goal(
-                title=goal_data.title,
-                boss=goal_data.boss,
-                profile_id=db_profile.id
-            )
-            db.add(db_goal)
-            db.commit()
-            db.refresh(db_goal)
-
-            generate_tasks_from_goal(db_goal, db)
-
+    existing = db.query(models.Profile).filter(models.Profile.username == request.username).first()
+    if existing:
         return RedirectResponse(
-            url=f"/dashboard/{db_profile.id}", status_code=303
+            url=f"/dashboard/{existing.id}", status_code=303
         )
 
-    except IntegrityError:
-        raise HTTPException(status_code=400, detail="username already exists.")
+
+    db_profile = models.Profile(username=request.username)
+    db.add(db_profile)
+    db.commit()
+    db.refresh(db_profile)
+
+    for goal_data in request.goals:
+        db_goal = models.Goal(
+            title=goal_data.title,
+            boss=goal_data.boss,
+            profile_id=db_profile.id
+        )
+        db.add(db_goal)
+        db.commit()
+        db.refresh(db_goal)
+
+        generate_tasks_from_goal(db_goal, db)
+
+    return RedirectResponse(
+        url=f"/dashboard/{db_profile.id}", status_code=303
+    )
 
 
 @router.get("/{profile_id}", response_model=schemas.Profile)

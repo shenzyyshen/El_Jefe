@@ -10,7 +10,7 @@ from core import  database
 from routers import models
 
 router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
-templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory="html")
 
 def get_db():
     """Dependency to get DB session
@@ -21,19 +21,21 @@ def get_db():
     finally:
         db.close()
 
-
-def dashboard(request: Request,profile_id: int, db: Session = Depends(get_db)):
-    """ display dashboard for a specific profile.
-    retrieve profile info, goals.
+@router.get("/{user_id}", response_class=HTMLResponse)
+def dashboard(request: Request, user_id: int, db: Session = Depends(get_db)):
+    """ display dashboard for a specific user.
+    retrieve user info, goals.
     passes data to dashboard.html template"""
 
-    profile = db.query(models.Profile).filter(models.Profile.id == profile_id).first()
+    user = db.query(models.User).filter(models.User.id == user_id).first()
 
-    if not profile:
-        return HTMLResponse("<h1>Profile not found</h1>", status_code=404)
+    if not user:
+        return HTTPException(status_code=404, detail="user not found")
 
-    return templates.TemplateResponse("dashboard.html",{
-        "request": request,
-        "profile": profile,
-        "goals": profile.goals
+    return templates.TemplateResponse(
+        "dashboard.html",
+        {
+            "request": request,
+            "user": user,
+            "goals": user.goals
     })

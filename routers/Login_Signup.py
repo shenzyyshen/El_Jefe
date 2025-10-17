@@ -29,6 +29,12 @@ def get_db():
         db.close()
 
 
+@router.get("/login_signup", response_class=HTMLResponse)
+def show_login_signup(request: Request):
+    """Serve the login/signup page """
+    return templates.TemplateResponse("login_signup.html", {"request": request})
+
+
 @router.post("/auth")
 def login_or_signup(
         username: str = Form(...),
@@ -54,12 +60,4 @@ def login_or_signup(
     db.refresh(new_user)
 
     return RedirectResponse(url=f"/dashboard/{new_user.id}", status_code=303)
-
-@router.get("/login_signup", response_class=HTMLResponse)
-def show_login_signup(request: Request):
-    """Serve the login/signup page """
-    return templates.TemplateResponse("login_signup.html", {"request": request})
-
-
-
 

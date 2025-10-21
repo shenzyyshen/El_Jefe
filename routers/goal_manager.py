@@ -26,7 +26,6 @@ def get_db():
     finally:
         db.close()
 
-#show the goals managment
 
 @router.get("/{user_id}", response_class=HTMLResponse)
 def show_goal_manager(user_id: int, request: Request, db: Session = Depends(get_db)):
@@ -56,14 +55,17 @@ def add_goal(user_id: int, title: str = Form(...), description: str = Form(None)
     db.commit()
     db.refresh(new_goal)
 
-    ai_service.generate_tasks_from_goal(new_goal, db)
+    try:
+        ai_service.generate_tasks_from_goal(new_goal, db)
+    except Exception as e:
+        print("AI task generation failed:", e)
 
     return RedirectResponse(url=f"/goal_manager/{user_id}", status_code=303)
 
 
 @router.post("/{user_id}/edit/{goal_id}")
 def edit_goal(user_id: int, goal_id: int, title: str =Form(...), description: str = Form(None), db: Session = Depends(get_db)):
-    goal = db.query(models.Gaol).filter(models.Goal.id ==goal_id, models.Goal.user_id == user_id).first()
+    goal = db.query(models.Goal).filter(models.Goal.id ==goal_id, models.Goal.user_id == user_id).first()
     if goal:
         goal.title= title
         goal.description = description

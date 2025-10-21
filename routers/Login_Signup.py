@@ -6,10 +6,10 @@
 """
 
 
-from fastapi import FastAPI, APIRouter, Depends, Form, Request, HTTPException
+from fastapi import APIRouter, Depends, Form, Request, HTTPException
 from fastapi.responses import RedirectResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
-from core import schemas, database
+from core import  database
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 from routers import models
@@ -29,7 +29,7 @@ def get_db():
         db.close()
 
 
-@router.get("/login_signup", response_class=HTMLResponse)
+@router.get("/", response_class=HTMLResponse)
 def show_login_signup(request: Request):
     """Serve the login/signup page """
     return templates.TemplateResponse("login_signup.html", {"request": request})
@@ -41,8 +41,19 @@ def login_or_signup(
         password: str = Form(...),
         db: Session = Depends(get_db)):
 
+
+    """Log in if user exists, otherwise create new user"""
+    # strip whitespace
+    username = username.strip()
+    password = password.strip()
+
     """login if username exists, otherwise create account"""
 
+    # ensure small passwords won't break bcrypt
+    if len(password) > 72:
+        password = password[:72]
+
+    #find existing user
     user = db.query(models.User).filter(models.User.username == username).first()
 
     if user:
@@ -51,6 +62,11 @@ def login_or_signup(
             raise HTTPException(status_code=404, detail="Incorrect password")
         #redirect to dashboard
         return RedirectResponse(url=f"/dashboard/{user.id}", status_code=303)
+
+    print("🔍 Debugging password before hashing:")
+    print(f"  Raw value: {repr(password)}")
+    print(f"  Type: {type(password)}")
+    print(f"  Length: {len(password)}")
 
     # otherwise create a new user
     hashed_password = pwd_context.hash(password)

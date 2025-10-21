@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>{{ profile.username }}'s Dashboard</title>
+  <title>{{ user.username }}'s Dashboard</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -73,6 +73,22 @@
         <p>No tasks yet for this goal.</p>
       {% endif %}
     </div>
+    <h2>Your Goals</h2>
+<div class="goals-list">
+  {% for goal in goals %}
+    <div class="goal-card">
+      <strong>{{ goal.title }}</strong><br>
+      {{ goal.description or 'No description' }}
+    </div>
+  {% else %}
+    <p>No goals yet. <a href="/goals_management/{{ user.id }}">Add one →</a></p>
+  {% endfor %}
+</div>
+
+<a href="/goals_management/{{ user.id }}"
+   class="btn-manage-goals">
+   ⚙️ Manage Goals
+</a>
   </div>
 {% endfor %}
 

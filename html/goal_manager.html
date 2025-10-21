@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ user.username }}'s Goal Management</title>
+  <style>
+    body {
+      background-color: #0f172a;
+      color: white;
+      font-family: Arial, sans-serif;
+      padding: 2rem;
+    }
+    h1 { color: #38bdf8; margin-bottom: 1rem; }
+    h2 { color: #94a3b8; margin-top: 2rem; }
+    .goal-card {
+      background: #1e293b;
+      border-radius: 10px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+    .goal-actions { margin-top: 0.5rem; }
+    button {
+      background: #38bdf8;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-right: 0.5rem;
+    }
+    button.delete { background: #ef4444; }
+    button.edit { background: #fbbf24; color: #000; }
+    input, textarea { padding: 0.5rem; border-radius: 8px; border: none; margin-right: 0.5rem; }
+    form { margin-bottom: 1rem; display: inline; }
+    .back-link { color: #38bdf8; display: block; margin-top: 2rem; }
+  </style>
+</head>
+<body>
+
+  <h1>Goals</h1>
+
+  <!-- Add new goal -->
+  <form method="POST" action="/goals_management/{{ user.id }}/add">
+    <input type="text" name="title" placeholder="New goal title" required />
+    <textarea name="description" placeholder="Optional description"></textarea>
+    <button type="submit">Add Goal</button>
+  </form>
+
+  <!-- Active Goals -->
+  <h2>Active Goals</h2>
+  {% set active_goals = goals | selectattr("completed", "equalto", false) | list %}
+  {% if active_goals %}
+    {% for goal in active_goals %}
+      <div class="goal-card">
+        <strong>{{ goal.title }}</strong><br>
+        {{ goal.description or 'No description' }}
+        <div class="goal-actions">
+          <form action="/goals_management/{{ user.id }}/complete/{{ goal.id }}" method="post">
+            <button type="submit">✅ Complete</button>
+          </form>
+          <form action="/goals_management/{{ user.id }}/edit/{{ goal.id }}" method="post">
+            <input type="text" name="title" value="{{ goal.title }}">
+            <input type="text" name="description" value="{{ goal.description }}">
+            <button type="submit" class="edit">✏️ Save</button>
+          </form>
+          <form action="/goals_management/{{ user.id }}/delete/{{ goal.id }}" method="post">
+            <button type="submit" class="delete">🗑️ Delete</button>
+          </form>
+        </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p>No active goals yet.</p>
+  {% endif %}
+
+  <!-- Completed Goals -->
+  <h2>Completed Goals</h2>
+  {% set completed_goals = goals | selectattr("completed", "equalto", true) | list %}
+  {% if completed_goals %}
+    {% for goal in completed_goals %}
+      <div class="goal-card" style="opacity: 0.7;">
+        <strong>{{ goal.title }}</strong><br>
+        {{ goal.description or 'No description' }}
+        <div class="goal-actions">
+          <form action="/goals_management/{{ user.id }}/delete/{{ goal.id }}" method="post">
+            <button type="submit" class="delete">🗑️ Remove</button>
+          </form>
+        </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p>No completed goals yet.</p>
+  {% endif %}
+
+  <a href="/dashboard/{{ user.id }}" class="back-link">⬅ Back to Dashboard</a>
+
+</body>
+</html>

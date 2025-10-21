@@ -11,7 +11,7 @@ Relationship-
     -one user - many goals
     -one goal - many task
 """
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 from core.database import Base
 
@@ -43,6 +43,8 @@ class Goal(Base):
     description =Column(String, nullable=True)
     boss = Column(String, default="default") #stores selected boss
     user_id = Column(Integer, ForeignKey("users.id"))
+
+    completed = Column(Boolean, default=False)
 
     user = relationship("User", back_populates="goals")
     tasks = relationship("Task", back_populates="goal", cascade="all, delete-orphan")

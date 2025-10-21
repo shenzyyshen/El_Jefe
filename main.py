@@ -21,7 +21,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import RedirectResponse
 from core import database
-from routers import models, login_signup, goals, dashboard, tasks
+from routers import models, login_signup, goal_manager, dashboard, tasks
 
 """
 DB Table 
@@ -41,7 +41,7 @@ templates = Jinja2Templates(directory="html")
 Routers
 """
 app.include_router(login_signup.router)
-app.include_router(goals.router)
+app.include_router(goal_manager.router)
 app.include_router(dashboard.router)
 
 app.include_router(tasks.router)

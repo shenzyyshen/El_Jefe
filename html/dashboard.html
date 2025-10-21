@@ -4,93 +4,49 @@
   <meta charset="UTF-8">
   <title>{{ user.username }}'s Dashboard</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: linear-gradient(to right, #0f172a, #1e293b);
-      color: white;
-      margin: 0;
-      padding: 2rem;
-    }
-    h1 {
-      color: #38bdf8;
-    }
-    .goal-box {
-      background: #1e293b;
-      padding: 1.5rem;
-      border-radius: 10px;
-      box-shadow: 0px 8px 20px rgba(0,0,0,0.3);
-      margin-bottom: 1rem;
-    }
-    .goal-title {
-      font-size: 1.2rem;
-      font-weight: bold;
-      color: #38bdf8;
-    }
-    .boss {
-      font-size: 0.9rem;
-      color: #94a3b8;
-    }
-    .tasks{
-      margin-left:1.5rem;
-    }
-    button{
-      background: #38bdf8;
-      border: none;
-      color: white;
-      padding: 0.5rem 1rem;
-      border-radius: 6px;
-      margin: 0.3rem;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #0284c7
-    }
-    .completed {
-      text-decoration: line-through;
-      opacity: 0.6;
-    }
+    body { font-family: Arial, sans-serif; background: linear-gradient(to right, #0f172a, #1e293b); color: white; margin:0; padding:2rem; }
+    h1 { color: #38bdf8; }
+    .goal-box { background:#1e293b; padding:1.5rem; border-radius:10px; box-shadow:0px 8px 20px rgba(0,0,0,0.3); margin-bottom:1rem; }
+    .goal-title { font-size:1.2rem; font-weight:bold; color:#38bdf8; }
+    .boss { font-size:0.9rem; color:#94a3b8; }
+    .tasks { margin-left:1.5rem; }
+    button { background:#38bdf8; border:none; color:white; padding:0.5rem 1rem; border-radius:6px; margin:0.3rem; cursor:pointer; }
+    button:hover { background:#0284c7 }
+    .completed { text-decoration:line-through; opacity:0.6; }
+    nav { margin-bottom:1rem; }
   </style>
 </head>
 <body>
-  <h1>Welcome,  👋</h1>
+  <h1>Welcome, {{ user.username }}</h1>
+
+  <nav>
+    <a href="/goal_manager/{{ user.id }}" class="btn-manage-goals">⚙️ Manage Goals</a>
+  </nav>
+
   <p>Your current goals:</p>
 
   {% for goal in goals %}
-  <div class="goal-box">
-    <div class="goal-title">{{ goal.title }}</div>
-    <div class="boss">Boss: {{ goal.boss }}</div>
+    <div class="goal-box">
+      <div class="goal-title">{{ goal.title }}</div>
+      <div class="boss">Boss: {{ goal.boss }}</div>
 
-    <div class="tasks">
-      {% if goal.tasks %}
-        {% for task in goal.tasks %}
-          <div class="task" id="task-{{ task.id }}">
-            <p>{{ task.description }}</p>
-            <button onclick="editTask({{ task.id }})">Edit</button>
-            <button onclick="completeTask({{ task.id }})">Complete</button>
-          </div>
-        {% endfor %}
-      {% else %}
-        <p>No tasks yet for this goal.</p>
-      {% endif %}
-    </div>
-    <h2>Your Goals</h2>
-<div class="goals-list">
-  {% for goal in goals %}
-    <div class="goal-card">
-      <strong>{{ goal.title }}</strong><br>
-      {{ goal.description or 'No description' }}
+      <div class="tasks">
+        {% if goal.tasks %}
+          {% for task in goal.tasks %}
+            <div class="task" id="task-{{ task.id }}">
+              <p>{{ task.description }}</p>
+              <button onclick="editTask({{ task.id }})">Edit</button>
+              <button onclick="completeTask({{ task.id }})">Complete</button>
+            </div>
+          {% endfor %}
+        {% else %}
+          <p>No tasks yet for this goal.</p>
+        {% endif %}
+      </div>
     </div>
   {% else %}
-    <p>No goals yet. <a href="/goals_management/{{ user.id }}">Add one →</a></p>
+    <p>No goals yet. <a href="/goal_manager/{{ user.id }}">Add one →</a></p>
   {% endfor %}
-</div>
-
-<a href="/goals_management/{{ user.id }}"
-   class="btn-manage-goals">
-   ⚙️ Manage Goals
-</a>
-  </div>
-{% endfor %}
 
   <p style="margin-top:2rem;">More AI-powered features coming soon...</p>
 
@@ -103,23 +59,15 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ description: newDescription }),
       });
-      if (res.ok) {
-        location.reload();
-      } else {
-        alert("Failed to update task");
-      }
+      if (res.ok) location.reload();
+      else alert("Failed to update task");
     }
 
     async function completeTask(taskId) {
       const res = await fetch(`/tasks/${taskId}/complete`, { method: "PATCH" });
-      if (res.ok) {
-        location.reload();
-      } else {
-        alert("Failed to complete task");
-      }
+      if (res.ok) location.reload();
+      else alert("Failed to complete task");
     }
   </script>
 </body>
 </html>
-
-

@@ -47,10 +47,11 @@ def generate_tasks_from_goal(goal, db: Session):
 
     task_text = response.choices[0].message.content.strip().split("\n")
 
-    for task_text in task_text:
+    tasks_cleaned =[line.strip("- ").strip() for line in task_text  if line.strip()]
+
+    for task_description in tasks_cleaned:
         new_task = models.Task(description=task_text.strip(), goal_id=goal.id)
         db.add(new_task)
-
     db.commit()
 
 

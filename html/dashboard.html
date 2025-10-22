@@ -117,40 +117,50 @@
 </head>
 
 <body>
+  <div class="sidebar">
+    <h2>Dashboard</h2>
+    <a href="/goal_manager/{{user.id}}"> Manage Goals</a>
+    <a href="#"> AI insight</a>
+    <a href="#"> Journal</a>
+    <a href="#"> Boss Training </a>
+    <a href="#"> Productivity stats</a>
+    <a href="#"> Settings</a>
+  </div>
 
-
+  <div class="main-content">
   <h1>Welcome, {{ user.username }}</h1>
+    <p>Your current goals:</p>
 
-  <nav>
-    <a href="/goal_manager/{{ user.id }}" class="btn-manage-goals">⚙️ Manage Goals</a>
-  </nav>
+    {% if goals %}
+      {% for goal in goals %}
+        <div class="goal-box">
+          <div class="goal-title">{{ goal.title }}</div>
+          <div class="boss">Boss: {{ goal.boss }}</div>
 
-  <p>Your current goals:</p>
-
-  {% for goal in goals %}
-    <div class="goal-box">
-      <div class="goal-title">{{ goal.title }}</div>
-      <div class="boss">Boss: {{ goal.boss }}</div>
-
-      <div class="tasks">
-        {% if goal.tasks %}
-          {% for task in goal.tasks %}
-            <div class="task" id="task-{{ task.id }}">
-              <p>{{ task.description }}</p>
-              <button onclick="editTask({{ task.id }})">Edit</button>
-              <button onclick="completeTask({{ task.id }})">Complete</button>
-            </div>
-          {% endfor %}
-        {% else %}
-          <p>No tasks yet for this goal.</p>
-        {% endif %}
+          {% if goal.tasks %}
+            {% for task in goal.task %}
+              <div class="task-card">
+                <p>{{ task.description }}</p>
+                <div class="task-actions">
+                  <button onclick="editTask({{ task.id }})">Edit</button>
+                  <button onclick="completeTask({{ task.id }})">Complete</button>
+                </div>
+              </div>
+            {% endfor %}
+          {% else %}
+            <p>No tasks yet for this goal.</p>
+          {% endif %}
       </div>
-    </div>
+    {% endfor %}
   {% else %}
-    <p>No goals yet. <a href="/goal_manager/{{ user.id }}">Add one →</a></p>
-  {% endfor %}
+    <p>No goals yet. <a href="/goal_manager/{{ user.id }}" style="color: #38bdf8;">Add one </a></p>
+  {% endif %}
 
-  <p style="margin-top:2rem;">More AI-powered features coming soon...</p>
+  <footer>
+    <p style="margin-top:2rem;">More AI-powered features coming soon...</p>
+  </footer>
+  </div>
+
 
   <script>
     async function editTask(taskId) {

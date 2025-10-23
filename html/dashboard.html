@@ -14,6 +14,7 @@
       padding:2rem;
       overflow: hidden;
     }
+
     .sidebar{
       width:240px;
       background-color: #0f172a;
@@ -57,6 +58,7 @@
       color: #38bdf8;
       margin-bottom: 0.5rem;
     }
+
     p{
       color: #cbd5e1;
     }
@@ -69,9 +71,17 @@
       margin-bottom:1rem;
       transition: transform 0.2s ease, box-shadow 0.3s;
     }
+
     .goal-box:hover {
       transform: translateY(-3px);
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+    }
+
+    .goal-header{
+      display:flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
     }
 
     .goal-title {
@@ -80,18 +90,49 @@
       color:#38bdf8;
       margin-bottom: 0.3rem;
     }
+
     .boss {
       font-size:0.9rem;
       color:#94a3b8;
       margin-bottom: 1rem;
     }
-    .tasks {
-      margin-left:1.5rem;
-      padding: 0.3rem 0;
+
+    .toggle-btn{
+      background: #38bdf8;
+      border: none;
+      color: #0f172a;
+      padding: 0.4rem 0.8rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.3s;
     }
-    button {
-      background:#38bdf8;
-      border:none;
+
+    .toggle-btn:hover {
+      background: #0284c7;
+      color: white;
+    }
+    .task-list{
+      display: none;
+      margin-top: 1rem;
+      margin-left: 0.5rem;
+    }
+    .task-card{
+      background: #0f172a;
+      padding: 0.8rem;
+      border-radius: 8px;
+      margin: 0.4rem 0;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+    .task-card p{
+      margin: 0;
+      color: #cdb5e1;
+    }
+    .task-actions {
+      margin-top: 0.5rem
+    }
+    button.action{
+      background: #38bdf8;
+      border: none;
       color:white;
       padding:0.5rem 1rem;
       border-radius:6px;
@@ -99,8 +140,8 @@
       cursor:pointer;
       transition: background 0.3s;
     }
-    button:hover {
-      background:#0284c7
+    button.action:hover {
+      background: #0284c7;
     }
     .completed {
       text-decoration:line-through;

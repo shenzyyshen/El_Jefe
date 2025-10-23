@@ -11,7 +11,7 @@ Manage user's goals:
 from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 from core import database
 from routers import models
 from services import ai_service
@@ -29,11 +29,13 @@ def get_db():
 
 @router.get("/{user_id}", response_class=HTMLResponse)
 def show_goal_manager(user_id: int, request: Request, db: Session = Depends(get_db)):
-    """display goal manager page for user"""
+    """display goal manager page for user W/ task loaded"""
     user = db.query(models.User).filter(models.User.id == user_id).first()
     if not user:
         return HTMLResponse("user not found", status_code=404)
-    goals = db.query(models.Goal).filter(models.Goal.user_id == user.id).all()
+
+    goals = (
+        db.query(models.Goal).filter(models.Goal.user_id == user.id).all()
     return templates.TemplateResponse(
         "goal_manager.html",
         {"request": request, "user": user, "goals": goals}

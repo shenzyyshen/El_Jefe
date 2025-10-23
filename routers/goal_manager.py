@@ -35,7 +35,12 @@ def show_goal_manager(user_id: int, request: Request, db: Session = Depends(get_
         return HTMLResponse("user not found", status_code=404)
 
     goals = (
-        db.query(models.Goal).filter(models.Goal.user_id == user.id).all()
+        db.query(models.Goal)
+        .options(selectinload(models.Goal.tasks))
+        .filter(models.Goal.user_id == user.id)
+        .all()
+    )
+
     return templates.TemplateResponse(
         "goal_manager.html",
         {"request": request, "user": user, "goals": goals}

@@ -41,10 +41,9 @@ class Goal(Base):
     id =Column(Integer, primary_key=True, index=True)
     title =Column(String, index=True)
     description =Column(String, nullable=True)
-    boss = Column(String, default="default") #stores selected boss
-    user_id = Column(Integer, ForeignKey("users.id"))
-
     completed = Column(Boolean, default=False)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    boss = Column(String, default="default") #stores selected boss
 
     user = relationship("User", back_populates="goals")
     tasks = relationship("Task", back_populates="goal", cascade="all, delete-orphan")
@@ -55,8 +54,9 @@ class Task(Base):
     __tablename__= "tasks"
 
     id = Column(Integer, primary_key=True, index=True)
-    description =Column(String, index=True)
     goal_id =Column(Integer, ForeignKey("goals.id"))
+    description =Column(String, nullable=False)
+    completed = Column(Boolean, default=False)
 
     goal = relationship("Goal", back_populates="tasks")
 

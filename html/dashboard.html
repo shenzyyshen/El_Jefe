@@ -170,18 +170,14 @@
 
   <div class="main-content">
   <h1>Welcome, {{ user.username }}</h1>
-    <p>Your current goals:</p>
+    <p>Your current Tasks:</p>
 
-    {% if goals %}
-      {% for goal in goals %}
-        <div class="goal-box">
-          <div class="goal-title">{{ goal.title }}</div>
-          <div class="boss">Boss: {{ goal.boss }}</div>
-
-          {% if goal.tasks %}
-            {% for task in goal.task %}
+          {% if tasks %}
+            {% for task, goal in tasks %}
               <div class="task-card">
                 <p>{{ task.description }}</p>
+                <p class="boss">From Goal: <strong>{{ goal.title }}</strong> | Boss: {{goal.boss }} </p>
+
                 <div class="task-actions">
                   <button onclick="editTask({{ task.id }})">Edit</button>
                   <button onclick="completeTask({{ task.id }})">Complete</button>
@@ -189,13 +185,11 @@
               </div>
             {% endfor %}
           {% else %}
-            <p>No tasks yet for this goal.</p>
+            <p>No tasks, create a goal from your
+              <a href="/goal_manager/{{ user.id }}" style="color:#38bdf8;">Goal Manager</a>
+            </p>
           {% endif %}
-      </div>
-    {% endfor %}
-  {% else %}
-    <p>No goals yet. <a href="/goal_manager/{{ user.id }}" style="color: #38bdf8;">Add one </a></p>
-  {% endif %}
+
 
   <footer>
     <p style="margin-top:2rem;">More AI-powered features coming soon...</p>

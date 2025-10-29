@@ -5,7 +5,7 @@ display all goals and their associated tasks """
 from fastapi import APIRouter, Depends, Request, HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
-from sqlalchemy.orm import Session, selectinload
+from sqlalchemy.orm import Session
 from core import  database
 from routers import models
 
@@ -25,6 +25,7 @@ def get_db():
 def dashboard(request: Request, user_id: int, db: Session = Depends(get_db)):
     """ display dashboard for a specific user.
     retrieve user info, goals and tasks
+    displays tasks of the goals retirved.
     passes data to dashboard.html template"""
 
     user = db.query(models.User).filter(models.User.id == user_id).first()
@@ -32,16 +33,20 @@ def dashboard(request: Request, user_id: int, db: Session = Depends(get_db)):
     if not user:
         raise HTTPException(status_code=404, detail="user not found")
 
-    goals = (
-        db.query(models.Goal)
-        .options(selectinload(models.Goal.tasks))
+    #get tasks of goals
+    tasks = (
+        db.query(models.Task, models.Goal)
+        .join(models.Goal, models.Task.goal_id == models.Goal.id)
         .filter(models.Goal.user_id == user_id)
+        .order_by(models.Task.completed.asc())
         .all()
     )
+
     return templates.TemplateResponse(
         "dashboard.html",
         {
             "request": request,
             "user": user,
-            "goals": user.goals
-    })
+            "tasks": tasks
+    }
+)

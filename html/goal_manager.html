@@ -89,6 +89,18 @@
   <form method="POST" action="/goal_manager/{{ user.id }}/add">
     <input type="text" name="title" placeholder="New goal title" required />
     <textarea name="description" placeholder="Optional description"></textarea>
+
+    <select name="boss" required>
+      <option disabled select>Select Boss</option>
+      <option value="Business Boss">Business Boss</option>
+      <option value="Health Boss">Health Boss</option>
+      <option value="Creative Boss">Creative Boss</option>
+      <option value="personal Development Boss">Personal Development Boss</option>
+    </select>
+
+    <label> Goal Color:</label>
+    <input type="color" name="color" value="#38bdf8"/>
+
     <button type="submit">Add Goal</button>
   </form>
 

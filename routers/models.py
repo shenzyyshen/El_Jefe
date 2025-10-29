@@ -42,11 +42,10 @@ class Goal(Base):
     title =Column(String, index=True)
     description =Column(String, nullable=True)
     completed = Column(Boolean, default=False)
-    user_id = Column(Integer, ForeignKey("users.id"))
-    boss = Column(String, default="default") #stores selected boss
+    boss = Column(String, defualt="No BOSS Assigned")
+    color = Column(String, defualt="#38bdf8")
+    tasks = relationship("Task", back_populates="goal")
 
-    user = relationship("User", back_populates="goals")
-    tasks = relationship("Task", back_populates="goal", cascade="all, delete-orphan")
 
 #task table
 """stores ai gen tasks linked to goal"""

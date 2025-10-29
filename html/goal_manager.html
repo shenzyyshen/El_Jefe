@@ -95,11 +95,18 @@
   <!-- Active Goals -->
   <h2>Active Goals</h2>
   {% for goal in goals if not goal.completed %}
+    {% set completed = goal.tasks | selectattr("completed") | list | length %}
+    {% set total = goal.tasks  | length %}
+    {% set pct = (completed / total * 100) if total > 0 else 0 %}
+
       <div class="goal-card">
         <strong>{{ goal.title }}</strong><br>
         {{ goal.description or 'No description provided' }}
 
-        <div class="goal-actions">
+        <div class="progress">{{ completed }} / {{ total}} tasks completed </div>
+        <div class="bar"><div class="fill" style="width:{{ pct }}%"></div></div>
+
+        <div class="goal-action">
 
           <form action="/goal_manager/{{ user.id }}/complete/{{ goal.id }}" method="post" style="display:inline;">
             <button type="submit">✅ Complete</button>
@@ -111,29 +118,28 @@
             <button type="submit" class="edit">✏️ Save</button>
           </form>
 
-          <form action="/goals_management/{{ user.id }}/delete/{{ goal.id }}" method="post" style="display:inline;">
+          <form action="/goal_manager/{{ user.id }}/delete/{{ goal.id }}" method="post" style="display:inline;">
             <button type="submit" class="delete">🗑️ Delete</button>
           </form>
+
         </div>
       </div>
   {% else %}
     <p>No active goals yet.</p>
-  {% endfor%}
+  {% endfor %}
 
   <!-- Completed Goals -->
   <h2>Completed Goals</h2>
     {% for goal in goals if goal.completed %}
       <div class="goal-card" style="opacity: 0.7;">
         <strong>{{ goal.title }}</strong><br>
-        {{ goal.description or 'No description' }}
+        {{ goal.description }}
 
-        <div class="goal-actions">
 
-          <form action="/goals_manager/{{ user.id }}/delete/{{ goal.id }}" method="post" style="display:inline;">
+          <form action="/goal_manager/{{ user.id }}/delete/{{ goal.id }}" method="post" style="display:inline;">
             <button type="submit" class="delete">🗑️ Remove</button>
           </form>
         </div>
-      </div>
   {% else %}
     <p>No completed goals yet.</p>
   {% endfor %}

@@ -47,16 +47,26 @@ def show_goal_manager(user_id: int, request: Request, db: Session = Depends(get_
     )
 
 @router.post("/{user_id}/add")
-def add_goal(user_id: int, title: str = Form(...), description: str = Form(None), db: Session = Depends(get_db)):
-    """add a new goal and automatically generate ai tasks"""
-    user = db.query(models.User).filter(models.User.id ==user_id).first()
+def add_goal(
+        user_id: int,
+        title: str = Form(...),
+        description: str = Form(""),
+        boss: str = Form(...),
+        color: str = Form("#38bdf8"),
+        db: Session = Depends(get_db)):
+
+    """Add a new goal and automatically generate AI tasks"""
+
+    user = db.query(models.User).filter(models.User.id == user_id).first()
     if not user:
         return HTMLResponse("User not found", status_code=404)
 
     new_goal = models.Goal(
         title=title,
         description=description,
-        user_id=user_id
+        boss=boss,
+        color=color,
+        user_id=user.id
     )
     db.add(new_goal)
     db.commit()

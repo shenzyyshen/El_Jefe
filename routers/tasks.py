@@ -1,6 +1,6 @@
 """ tasks.py manages task updates (edit and complete """
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, Request, Body, HTTPException
 from sqlalchemy.orm import Session
 from core import database, schemas
 from routers import models
@@ -38,6 +38,14 @@ def complete_task(task_id: int, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(task)
     return task
+
+@router.patch("/tasks/{task_id}/complete_toggle")
+def toggle_task(task_id: int, completed: bool = Body(...), db: Session=Depends(get_db)):
+    task = db.query(models.Task).get(task_id)
+    task.completed =completed
+    db.commit()
+    return {"status": "ok"}
+
 
 
 

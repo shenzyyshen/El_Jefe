@@ -174,14 +174,12 @@
 
           {% if tasks %}
             {% for task, goal in tasks %}
-              <div class="task-card">
+              <div class="task-card" style="border-left: 6px solid {{ goal.color }};">
                 <p>{{ task.description }}</p>
                 <p class="boss">From Goal: <strong>{{ goal.title }}</strong> | Boss: {{goal.boss }} </p>
 
-                <div class="task-actions">
-                  <button onclick="editTask({{ task.id }})">Edit</button>
-                  <button onclick="completeTask({{ task.id }})">Complete</button>
-                </div>
+                <input type="checkbox" {% if task.completed %}checked{% endif %}
+                       onchange="toggleTask({{ task.id }}, this.checked)">
               </div>
             {% endfor %}
           {% else %}
@@ -214,6 +212,14 @@
       const res = await fetch(`/tasks/${taskId}/complete`, { method: "PATCH" });
       if (res.ok) location.reload();
       else alert("Failed to complete task");
+    }
+
+    async function toggleTask(taskId, done) {
+      const res = await fetch(`/tasks/${taskId}/complete_toggle`,{
+        method: "PATCH",
+        headers: {"Content-Type": "application/json" },
+        body: JSON.stringify({completed: done })
+      });
     }
   </script>
 </body>

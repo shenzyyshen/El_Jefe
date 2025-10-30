@@ -17,13 +17,13 @@ from core.database import Base
 
 
 #user table
-"""Stores user user information"""
+"""Stores user information"""
 
 class User(Base):
     __tablename__= "users"
 
     id = Column(Integer, primary_key=True, index=True)
-    username = Column(String, unique=True, index=True)
+    username = Column(String, unique=True, nullable=False)
     password = Column(String, nullable=False)
 
     goals = relationship("Goal", back_populates="user", cascade="all, delete-orphan")
@@ -39,12 +39,20 @@ class Goal(Base):
     __tablename__= "goals"
 
     id =Column(Integer, primary_key=True, index=True)
-    title =Column(String, index=True)
-    description =Column(String, nullable=True)
+    title =Column(String, nullable=False)
+    description =Column(String)
+
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+
+    #Relationship back to user
+    user = relationship("User", back_populates="goals")
+
+    #if tasks already exist
+    tasks = relationship("Task", back_populates="goal", cascade="all, delete-orphan")
+
     completed = Column(Boolean, default=False)
-    boss = Column(String, defualt="No BOSS Assigned")
-    color = Column(String, defualt="#38bdf8")
-    tasks = relationship("Task", back_populates="goal")
+    boss = Column(String, default="No BOSS Assigned")
+    color = Column(String, default="#38bdf8")
 
 
 #task table
@@ -53,10 +61,10 @@ class Task(Base):
     __tablename__= "tasks"
 
     id = Column(Integer, primary_key=True, index=True)
-    goal_id =Column(Integer, ForeignKey("goals.id"))
     description =Column(String, nullable=False)
     completed = Column(Boolean, default=False)
 
+    goal_id = Column(Integer, ForeignKey("goals.id"), nullable=False)
     goal = relationship("Goal", back_populates="tasks")
 
     def __repr__(self):

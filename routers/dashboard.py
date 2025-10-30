@@ -2,7 +2,7 @@
 display all goals and their associated tasks """
 
 
-from fastapi import APIRouter, Depends, Request, HTTPException
+from fastapi import APIRouter, Depends, Body, Request, HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session

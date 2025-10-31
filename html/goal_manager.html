@@ -78,12 +78,26 @@
     .back-link:hover{
       text-decoration: underline;
     }
+    .bar {
+      position: relative;
+      height: 8px;
+      background: #e2e8f0;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 6px;
+    }
+    .fill {
+      height: 100%;
+      background: #0284c7;
+      border-radius: 4px;
+    }
+
   </style>
 </head>
 
 <body>
 
-  <h1>{{user.username}}#s Goals</h1>
+  <h1>{{ user.username }}'s Goals</h1>
 
   <!-- Add new goal -->
   <form method="POST" action="/goal_manager/{{ user.id }}/add">
@@ -111,7 +125,7 @@
     {% set total = goal.tasks  | length %}
     {% set pct = (completed / total * 100) if total > 0 else 0 %}
 
-      <div class="goal-card">
+      <div class="goal-card" style="background:{{ goal.color }};">
         <strong>{{ goal.title }}</strong><br>
         {{ goal.description or 'No description provided' }}
 

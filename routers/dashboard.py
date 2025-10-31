@@ -5,7 +5,7 @@ display all goals and their associated tasks """
 from fastapi import APIRouter, Depends, Body, Request, HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from core import  database
 from routers import models
 
@@ -34,19 +34,25 @@ def dashboard(request: Request, user_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="user not found")
 
     #get tasks of goals
-    tasks = (
+    tasks_with_goals = (
         db.query(models.Task, models.Goal)
         .join(models.Goal, models.Task.goal_id == models.Goal.id)
         .filter(models.Goal.user_id == user_id)
-        .order_by(models.Task.completed.asc())
+        .filter(models.Task.completed == False)
+        .order_by(models.Task.difficulty_stage.asc(), models.Task.id.asc())
         .all()
     )
+
+    stages = [t.difficulty_stage for t, g in tasks_with_goals if t.difficulty_stage is not None]
+    current_stage = min(stages) if stages else 0
+
+    visible_tasks =[(t, g) for (t, g) in tasks_with_goals if t.difficulty_stage == current_stage][:5]
 
     return templates.TemplateResponse(
         "dashboard.html",
         {
             "request": request,
             "user": user,
-            "tasks": tasks
+            "tasks": visible_tasks  #only 5 tasks
     }
 )

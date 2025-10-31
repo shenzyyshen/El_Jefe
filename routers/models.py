@@ -64,8 +64,10 @@ class Task(Base):
     description =Column(String, nullable=False)
     completed = Column(Boolean, default=False)
 
+    difficulty_stage = Column(Integer, nullable=True)
+
     goal_id = Column(Integer, ForeignKey("goals.id"), nullable=False)
     goal = relationship("Goal", back_populates="tasks")
 
     def __repr__(self):
-        return f"<Task(description={self.description}, goal_id{self.goal_id})>"
+        return f"<Task(description={self.description}, stage={self.difficulty_stage} goal_id{self.goal_id})>"

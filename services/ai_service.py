@@ -32,31 +32,47 @@ def generate_tasks_from_goal(goal, db: Session):
         returns: a list of task description suggested by the ai
     """
 
-    prompt = f"Generate 3 tasks to help achieve this goal: {goal.title}"
-
+    prompt = f"""
+    create **15 tasks** for the goal: "{goal.title}"
+    
+    Divide them into 3 difficulty groups: 
+    - Tasks 1-5: Beginner level / getting started
+    - Tasks 6-10: Intermediate difficulty
+    - Tasks 11-15: Advanced / Mastery level
+    
+    Return them in a numbered list, like 
+    1. first 1-5
+    2. next 6-10 
+    3. last 11-15
+"""
     response = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
             {"role": "system",
-            "content": "you are the boss, through my goals, create small actionable tasks"
-            },
-            {"role":"user",
-            "content": f"Break this goal into 3-5 clear tasks: {goal.title}"}
+            "content": "you are a structured goal planning mentor, through my tasks of each goal, create small actionable tasks that help me learn my goal"},
+            {"role": "user", "content": prompt}
         ]
     )
 
     raw_output = response.choices[0].message.content.strip()
 
-    tasks_cleaned =[
-        line.strip("- ").strip()
+    tasks =[
+        line.split(".", 1)[1].strip() if "." in line else line.strip()
         for line in raw_output.split("\n")
         if line.strip()
     ]
 
-    for task_description in tasks_cleaned:
+    tasks = tasks[:15]
+
+    for index, task_description in enumerate(tasks):
+        difficulty_stage = index // 5
+
         new_task = models.Task(
             description=task_description,
-            goal_id=goal.id)
+            goal_id=goal.id,
+            difficulty_stage=difficulty_stage,
+            completed=False
+        )
         db.add(new_task)
 
     db.commit()

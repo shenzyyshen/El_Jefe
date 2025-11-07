@@ -33,6 +33,18 @@ class User(Base):
     """
     def __repr__(self):
         return f"<user(username={self.username}>"
+#boss tabel
+class Boss(Base):
+    __tablename__="bosses"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name =Column(String, nullable=False, unique=True)
+    strictness = Column(Integer, defualt=5)
+    description =Column(String, default="")
+
+    goals = relationship("Goal", back_populates="boss_obj")
+
+
 
 #goal table
 class Goal(Base):
@@ -53,6 +65,9 @@ class Goal(Base):
     completed = Column(Boolean, default=False)
     boss = Column(String, default="Sensei Wu")
     color = Column(String, default="#38bdf8")
+
+    boss_id = Column(Integer, ForeignKey("bosses.id"), nullable=False)
+    boss_obj = relationship("Boss", back_populates="goals")
 
 #task table
 """stores ai gen tasks linked to goal"""

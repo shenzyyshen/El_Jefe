@@ -33,20 +33,33 @@ def dashboard(request: Request, user_id: int, db: Session = Depends(get_db)):
     if not user:
         raise HTTPException(status_code=404, detail="user not found")
 
-    #get tasks of goals
-    tasks_with_goals = (
-        db.query(models.Task, models.Goal)
-        .join(models.Goal, models.Task.goal_id == models.Goal.id)
-        .filter(models.Goal.user_id == user_id)
-        .filter(models.Task.completed == False)
-        .order_by(models.Task.difficulty_stage.asc(), models.Task.id.asc())
-        .all()
-    )
+#get all goal
+    goals = db.query(models.Goal).filter(models.Goal.user_id == user_id).all()
 
-    stages = [t.difficulty_stage for t, g in tasks_with_goals if t.difficulty_stage is not None]
-    current_stage = min(stages) if stages else 0
+    visible_tasks = []
 
-    visible_tasks =[(t, g) for (t, g) in tasks_with_goals if t.difficulty_stage == current_stage][:5]
+    for goal in goals:
+        goal_tasks= (
+            db.query(models.Task)
+            .filter(models.Task.goal_id == goal.id, models.Task.completed == False)
+            .join(models.Goal, models.Task.goal_id == models.Goal.id)
+            .order_by(models.Task.difficulty_stage.asc(), models.Task.id.asc())
+            .all()
+        )
+
+        if not goal_tasks:
+            continue
+
+        #what stage each task is in
+        stages_remaining = {t.difficulty_stage for t in goal_tasks}
+        current_stage = min(stages_remaining)
+
+        stage_tasks = [t for t in goal_tasks if t.difficulty_stage == current_stage][:5]
+
+        for task in stage_tasks:
+            visible_tasks.append((task, goal))
+
+
 
     return templates.TemplateResponse(
         "dashboard.html",

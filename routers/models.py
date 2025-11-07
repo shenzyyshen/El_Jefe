@@ -51,9 +51,8 @@ class Goal(Base):
     tasks = relationship("Task", back_populates="goal", cascade="all, delete-orphan")
 
     completed = Column(Boolean, default=False)
-    boss = Column(String, default="No BOSS Assigned")
+    boss = Column(String, default="Sensei Wu")
     color = Column(String, default="#38bdf8")
-
 
 #task table
 """stores ai gen tasks linked to goal"""
@@ -64,7 +63,7 @@ class Task(Base):
     description =Column(String, nullable=False)
     completed = Column(Boolean, default=False)
 
-    difficulty_stage = Column(Integer, nullable=True)
+    difficulty_stage = Column(Integer, nullable=False, default=0)
 
     goal_id = Column(Integer, ForeignKey("goals.id"), nullable=False)
     goal = relationship("Goal", back_populates="tasks")

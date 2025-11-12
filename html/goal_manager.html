@@ -104,12 +104,13 @@
     <input type="text" name="title" placeholder="New goal title" required />
     <textarea name="description" placeholder="Optional description"></textarea>
 
-    <select name="boss" required>
-      <option disabled select>Select Boss</option>
-      <option value="Business Boss">Business Boss</option>
-      <option value="Health Boss">Health Boss</option>
-      <option value="Creative Boss">Creative Boss</option>
-      <option value="personal Development Boss">Personal Development Boss</option>
+    <select name="boss_id" required>
+      <option disabled selected>Select Boss</option>
+      {% for boss in bosses %}
+        <option value="{{ boss.id }}">
+          {{ boss.name }} (strictness: {{ boss.strictness }})
+        </option>
+      {% endfor %}
     </select>
 
     <label> Goal Color:</label>

@@ -26,6 +26,15 @@ def get_db():
     finally:
         db.close()
 
+def get_default_boss(db):
+    boss = db.query(models.Boss).filter(models.Boss.name =="sensei Wu").first()
+    if not boss:
+        boss = models.Boss(name="Sensei Wu", strictness=5, description= "You are a wise mentor.")
+        db.add(boss)
+        db.commit()
+        db.refresh(boss)
+    return boss
+
 
 @router.get("/{user_id}", response_class=HTMLResponse)
 def show_goal_manager(user_id: int, request: Request, db: Session = Depends(get_db)):
@@ -40,19 +49,21 @@ def show_goal_manager(user_id: int, request: Request, db: Session = Depends(get_
         .filter(models.Goal.user_id == user.id)
         .all()
     )
+    bosses = db.query(models.Boss).all()
 
     return templates.TemplateResponse(
         "goal_manager.html",
-        {"request": request, "user": user, "goals": goals}
+        {"request": request, "user": user, "goals": goals, "bosses": bosses}
     )
+
 
 @router.post("/{user_id}/add")
 def add_goal(
         user_id: int,
         title: str = Form(...),
         description: str = Form(""),
-        boss: str = Form(...),
         color: str = Form("#38bdf8"),
+        boss_id: int = Form(None),
         db: Session = Depends(get_db)):
 
     """Add a new goal and automatically generate AI tasks"""
@@ -61,12 +72,16 @@ def add_goal(
     if not user:
         return HTMLResponse("User not found", status_code=404)
 
+    if boss_id is None:
+        boss = get_default_boss(db)
+        boss_id = boss.id
+
     new_goal = models.Goal(
         title=title,
         description=description,
-        boss=boss,
         color=color,
-        user_id=user.id
+        user_id=user.id,
+        boss_id=boss_id
     )
     db.add(new_goal)
     db.commit()

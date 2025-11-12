@@ -39,7 +39,7 @@ class Boss(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name =Column(String, nullable=False, unique=True)
-    strictness = Column(Integer, defualt=5)
+    strictness = Column(Integer, default=5)
     description =Column(String, default="")
 
     goals = relationship("Goal", back_populates="boss_obj")
@@ -63,11 +63,19 @@ class Goal(Base):
     tasks = relationship("Task", back_populates="goal", cascade="all, delete-orphan")
 
     completed = Column(Boolean, default=False)
-    boss = Column(String, default="Sensei Wu")
     color = Column(String, default="#38bdf8")
 
     boss_id = Column(Integer, ForeignKey("bosses.id"), nullable=False)
     boss_obj = relationship("Boss", back_populates="goals")
+
+def get_default_boss(db):
+    boss = db.query(Boss).filter(Boss.name =="Sensei Wu").first()
+    if not boss:
+        boss = Boss(name="Sensei Wu", strictness=5, description="Your are a wise mentor.")
+        db.add(boss)
+        db.commit()
+        db.refresh(boss)
+    return boss
 
 #task table
 """stores ai gen tasks linked to goal"""

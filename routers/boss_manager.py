@@ -15,6 +15,28 @@ def get_db():
     finally:
         db.close()
 
+@router.get("/{user_id}", response_class=HTMLResponse)
+def boss_manager(request: Request, user_id: int, db: Session = Depends(get_db)):
+    bosses = db.query(models.Boss).all()
+    return templates.TemplateResponse(
+        "boss_manager.html",
+        {"request": request, "user_id": user_id, "bosses": bosses}
+    )
+
+@router.get("/{user_id}/add")
+def add_boss(user_id: int,
+             name: str = Form(...),
+             description: str = Form(""),
+             strictness: int = Form(5),
+             db: Session = Depends(get_db)):
+
+    new_boss = models.Boss(name=name, description=description, strictness=strictness)
+    db.add(new_boss)
+    db.commit()
+
+    return RedirectResponse(url=f"/boss_manager/{user_id}", status_code=303)
+
+
 #list bosses
 @router.get("/", response_class=HTMLResponse)
 def list_bosses(request: Request, db: Session = Depends(get_db)):

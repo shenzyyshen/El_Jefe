@@ -1,37 +1,94 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  meta charset="UTF-8">
+  <meta charset="UTF-8">
   <title>Boss Manager</title>
+  <style>
+
+    body{
+      font-family: Ariel, sans-serif;
+      background: #0f172a;
+      color: white;
+      padding: 2rem;
+    }
+
+    h1, h2 {
+      color: #38bdf8;
+    }
+
+    form {
+      margin-bottom: 1rem;
+    }
+
+    input, button {
+      margin: 0.25rem;
+      padding: 0.5rem;
+      border-radius: 6px;
+      border: none;
+    }
+
+    input[type="text"], input[type="number"] {
+      width: 200px;
+    }
+
+    button{
+      background: #38bdf8;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      color: #0f172a;
+    }
+
+    button:hover {
+      background: #0284c7;
+      color: white;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    li {
+      background: #1e293b;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 0.5rem;
+    }
+  </style>
 </head>
-</html>
-<h1>Boss Manager</h1>
 
-<h2>Add New Boss</h2>
-<form method="POST" action="/boss_manager/add">
-  <input type="text" name="name" placeholder="Boss Name" required>
-  <input type="text" name="description" placeholder="Description">
-  <input type="number" name="strictness" min="1" max="5" value="1">
-  <button type="submit">Add Boss</button>
-</form>
+<body>
+  <h1>Boss Manager</h1>
 
-<h2>Existing Bosses</h2>
-<ul>
-  {%for boss in bosses %}
-   <li>
-     <form method="POST" action="/boss_manager/edit/{{ boss.id }}">
-       <input type="text" name="name" value="{{ boss.name }}">
-       <input type="text" name="description" value="{{ boss.description }}">
-       <input type="number" name="stictness" min="1" max="5" value="{{ boss.strictness }}">
-       <button type="submit">save</button>
-     </form>
-     <form method="POST" action="/boss_manager/delete/{{ boss.id }}" style="display:inline;">
-       <button type="submit">Delete</button>
-     </form>
-   </li>
-  {% else %}
-  </li> No bosses yet.</li>
-  {% endfor %}
-</ul>
+  <h2>Add New Boss</h2>
+  <form method="POST" action="/boss_manager/{{ user_id }}/add">
+    <input type="text" name="name" placeholder="Boss Name" required>
+    <input type="text" name="description" placeholder="Description">
+    <input type="number" name="strictness" min="1" max="5" value="1">
+    <button type="submit">Add Boss</button>
+  </form>
+
+  <h2>Existing Bosses</h2>
+  <ul>
+    {%for boss in bosses %}
+      <li>
+        <form method="POST" action="/boss_manager/{{ user_id }}/edit/{{ boss.id }}">
+          <input type="text" name="name" value="{{ boss.name }}">
+          <input type="text" name="description" value="{{ boss.description }}">
+          <input type="number" name="stictness" min="1" max="5" value="{{ boss.strictness }}">
+          <button type="submit">save</button>
+        </form>
+
+        <form method="POST" action="/boss_manager/{{ user_id }}/delete/{{ boss.id }}" style="display:inline;">
+          <button type="submit" style="background:#ef4444; color:white;">Delete</button>
+        </form>
+      </li>
+    {% else %}
+      </li> No bosses yet.</li>
+    {% endfor %}
+  </ul>
+
+  <a href="/dashboard/{{ user_id }}" style="color:#38bdf8;"> back to Dashboard</a>
+
 </body>
 </html>

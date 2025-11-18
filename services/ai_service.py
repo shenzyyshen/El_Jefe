@@ -26,14 +26,26 @@ client = OpenAI(api_key=api_key)
 from sqlalchemy.orm import Session
 #function: generate_tasks_from_goal
 def generate_tasks_from_goal(goal, db: Session):
-    """ convert a user goal into a structured list of task using open ai
-        goal_text: str
-        the raw, messy goal provided by the user.
-        returns: a list of task description suggested by the ai
     """
+    convert a user goal into 15 structured list of task using open ai
+        tasks are flavored according to the assigned boss.
+        divided into 3 difficulty groups of 5 tasks each:
+        -beginner : 1-5
+        -intermediate: 6-10
+        -advanced: 11-15
+    """
+    #get boss info
+    boss_name = goal.boss_obj.name if goal.boss_obj else "Generic Boss"
+    boss_desc = goal.boss_onj.description if goal.boss_onj else "Neutral Mentor"
+
 
     prompt = f"""
+    You are an Ai goal mentor.
     create **15 tasks** for the goal: "{goal.title}"
+    goal description: "{goal.description or ''}"
+    Boss: {boss_name} ({boss_desc})
+    the tasks should reflect the personality of the Boss -funny, strict, motivating, etc.
+    
     
     Divide them into 3 difficulty groups: 
     - Tasks 1-5: Beginner level / getting started

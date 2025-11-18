@@ -55,7 +55,7 @@
     button.edit:hover{
       background: #f59e0b;
     }
-    input, textarea {
+    input, textarea, select{
       padding: 0.5rem;
       border-radius: 8px;
       border: none;
@@ -91,6 +91,16 @@
       background: #0284c7;
       border-radius: 4px;
     }
+    .task-count{
+      font-size: 0.9rem;
+      color:#334155;
+      margin-top: 6px;
+    }
+    .meta {
+      font-size:0.9rem;
+      color: #334155;
+      margin-bottom: 6px;
+    }
 
   </style>
 </head>
@@ -104,12 +114,11 @@
     <input type="text" name="title" placeholder="New goal title" required />
     <textarea name="description" placeholder="Optional description"></textarea>
 
+    <!-- boss_id-->
     <select name="boss_id" required>
       <option disabled selected>Select Boss</option>
       {% for boss in bosses %}
-        <option value="{{ boss.id }}">
-          {{ boss.name }} (strictness: {{ boss.strictness }})
-        </option>
+        <option value="{{ boss.id }}">{{ boss.name }}</option>
       {% endfor %}
     </select>
 
@@ -121,55 +130,75 @@
 
   <!-- Active Goals -->
   <h2>Active Goals</h2>
-  {% for goal in goals if not goal.completed %}
-    {% set completed = goal.tasks | selectattr("completed") | list | length %}
-    {% set total = goal.tasks  | length %}
-    {% set pct = (completed / total * 100) if total > 0 else 0 %}
+  {% set active = false %}
+  {% for goal in goals %}
+    {% if not goal.completed %}
+      {% set active = true %}
+      {% set completed = (goal.tasks | selectattr("completed") | list | length) %}
+      {% set total = (goal.tasks  | length) %}
+      {% set pct = (completed / total * 100) if total > 0 else 0 %}
 
-      <div class="goal-card" style="background:{{ goal.color }};">
-        <strong>{{ goal.title }}</strong><br>
-        {{ goal.description or 'No description provided' }}
+        <!--goal header -->
+      <div class="goal-card" style="border-left: 6px solid {{ goal.color }};">
+        <div class="meta">
+          <strong>{{ goal.title }}</strong>
+          - Boss: {{ goal.boss_obj.name }}
+        </div>
 
-        <div class="progress">{{ completed }} / {{ total}} tasks completed </div>
+        <div>{{ goal.description or 'No Descriptionn provided' }}</div>
+
+        <!--Tasks progress-->
+        <div class="task-count">{{ completed }} / {{ total }} tasks completed </div>
         <div class="bar"><div class="fill" style="width:{{ pct }}%"></div></div>
 
+        <!--Complete button-->
         <div class="goal-action">
-
           <form action="/goal_manager/{{ user.id }}/complete/{{ goal.id }}" method="post" style="display:inline;">
-            <button type="submit">✅ Complete</button>
+            <button type="submit">✅ Mark Complete</button>
           </form>
 
+          <!--Edit button-->
           <form action="/goal_manager/{{ user.id }}/edit/{{ goal.id }}" method="post" style="display:inline;">
             <input type="text" name="title" value="{{ goal.title }}">
             <input type="text" name="description" value="{{ goal.description }}">
             <button type="submit" class="edit">✏️ Save</button>
           </form>
 
+          <!--Delete button-->
           <form action="/goal_manager/{{ user.id }}/delete/{{ goal.id }}" method="post" style="display:inline;">
             <button type="submit" class="delete">🗑️ Delete</button>
           </form>
-
         </div>
       </div>
-  {% else %}
-    <p>No active goals yet.</p>
+    {% endif %}
   {% endfor %}
+{% if not active %}
+  <p>No active goals yet.</p>
+{% endif %}
 
   <!-- Completed Goals -->
   <h2>Completed Goals</h2>
-    {% for goal in goals if goal.completed %}
-      <div class="goal-card" style="opacity: 0.7;">
+
+    {% set any_completed = false %}
+    {% for goal in goals %}
+      {% if goal.completed %}
+      <div class="goal-card" style="opacity: 0.9;">
         <strong>{{ goal.title }}</strong><br>
-        {{ goal.description }}
+        {{ goal.description or ''}}
 
-
-          <form action="/goal_manager/{{ user.id }}/delete/{{ goal.id }}" method="post" style="display:inline;">
-            <button type="submit" class="delete">🗑️ Remove</button>
+        <div style="margin-top:8px;">
+          <form action="/goal_manager/ {{ user.id }}/delete/{{ goal.id }}"
+                method="post" style="display:inline;">
+            <button type="submit" class="delete"> Remove</button>
           </form>
         </div>
-  {% else %}
-    <p>No completed goals yet.</p>
+      </div>
+    {% endif %}
   {% endfor %}
+
+  {% if not any_completed %}
+      <p>No completed goals yet.</p>
+  {% endif %}
 
   <a href="/dashboard/{{ user.id }}" class="back-link">⬅ Back to Dashboard</a>
 

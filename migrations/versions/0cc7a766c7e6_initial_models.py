@@ -1,8 +1,8 @@
-"""Add boss table and link to goal
+"""Initial models
 
-Revision ID: 301c7fa35c0f
-Revises: 675b6955b14b
-Create Date: 2025-11-07 17:25:51.921415
+Revision ID: 0cc7a766c7e6
+Revises: 
+Create Date: 2025-11-14 18:28:38.590699
 
 """
 from typing import Sequence, Union
@@ -12,8 +12,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '301c7fa35c0f'
-down_revision: Union[str, Sequence[str], None] = '675b6955b14b'
+revision: str = '0cc7a766c7e6'
+down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

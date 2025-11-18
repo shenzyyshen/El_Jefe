@@ -43,8 +43,8 @@ class Profile(ProfileBase):
     id: int
     goals: List[Goal] = []
 
-    class Config:
-        from_attributes = True
+class Config:
+    from_attributes = True
 
 """
 task

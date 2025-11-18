@@ -50,7 +50,6 @@ def show_goal_manager(user_id: int, request: Request, db: Session = Depends(get_
         .all()
     )
     bosses = db.query(models.Boss).all()
-
     return templates.TemplateResponse(
         "goal_manager.html",
         {"request": request, "user": user, "goals": goals, "bosses": bosses}
@@ -72,16 +71,15 @@ def add_goal(
     if not user:
         return HTMLResponse("User not found", status_code=404)
 
-    if boss_id is None:
-        boss = get_default_boss(db)
-        boss_id = boss.id
+    boss_obj = db.query(models.Boss).filter(models.Boss.id == boss_id).first()
+    boss_name = boss_obj.name if boss_obj else "No Boss Assigned"
 
     new_goal = models.Goal(
         title=title,
         description=description,
-        color=color,
         user_id=user.id,
-        boss_id=boss_id
+        boss_id=boss_id,
+        color = color
     )
     db.add(new_goal)
     db.commit()

@@ -22,17 +22,19 @@ from core.database import Base
 class User(Base):
     __tablename__= "users"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True)
     username = Column(String, unique=True, nullable=False)
     password = Column(String, nullable=False)
 
-    goals = relationship("Goal", back_populates="user", cascade="all, delete-orphan")
+    goals = relationship("Goal", back_populates="user", foreign_keys="Goal.user_id")
+    bosses = relationship("Boss", back_populates="user")
 
     """(__repr__)special method/dunder method: to return a string representation of an object 
         mostly for debugging/logging looks nice 
     """
     def __repr__(self):
         return f"<user(username={self.username}>"
+
 #boss tabel
 class Boss(Base):
     __tablename__="bosses"
@@ -40,10 +42,12 @@ class Boss(Base):
     id = Column(Integer, primary_key=True, index=True)
     name =Column(String, nullable=False, unique=True)
     strictness = Column(Integer, default=5)
-    description =Column(String, default="")
+    description = Column(String, default="")
 
+    user_id = Column(Integer, ForeignKey("users.id"))
+
+    user = relationship("User", back_populates="bosses")
     goals = relationship("Goal", back_populates="boss_obj")
-
 
 
 #goal table
@@ -54,28 +58,21 @@ class Goal(Base):
     title =Column(String, nullable=False)
     description =Column(String)
 
+    #one foreign key to user
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    #one foreign key to boss
+    boss_id = Column(Integer, ForeignKey("bosses.id"), nullable=False)
 
-    #Relationship back to user
-    user = relationship("User", back_populates="goals")
 
-    #if tasks already exist
+
+    #relationship
+    user = relationship("User", back_populates="goals", foreign_keys=[user_id])
+    boss_obj = relationship("Boss", back_populates="goals", foreign_keys=[boss_id])
     tasks = relationship("Task", back_populates="goal", cascade="all, delete-orphan")
 
     completed = Column(Boolean, default=False)
     color = Column(String, default="#38bdf8")
 
-    boss_id = Column(Integer, ForeignKey("bosses.id"), nullable=False)
-    boss_obj = relationship("Boss", back_populates="goals")
-
-def get_default_boss(db):
-    boss = db.query(Boss).filter(Boss.name =="Sensei Wu").first()
-    if not boss:
-        boss = Boss(name="Sensei Wu", strictness=5, description="Your are a wise mentor.")
-        db.add(boss)
-        db.commit()
-        db.refresh(boss)
-    return boss
 
 #task table
 """stores ai gen tasks linked to goal"""
@@ -93,3 +90,13 @@ class Task(Base):
 
     def __repr__(self):
         return f"<Task(description={self.description}, stage={self.difficulty_stage} goal_id{self.goal_id})>"
+
+
+def get_default_boss(db):
+    boss = db.query(Boss).filter(Boss.name =="Sensei Wu").first()
+    if not boss:
+        boss = Boss(name="Sensei Wu", strictness=5, description="Your are a wise mentor.")
+        db.add(boss)
+        db.commit()
+        db.refresh(boss)
+    return boss

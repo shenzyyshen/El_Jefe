@@ -11,9 +11,11 @@ Relationship-
     -one user - many goals
     -one goal - many task
 """
-from sqlalchemy import Column, Integer, String, ForeignKey, Boolean
+from sqlalchemy import Column, Integer, String, ForeignKey, Boolean, DateTime, func
 from sqlalchemy.orm import relationship
 from core.database import Base
+from datetime import datetime
+
 
 
 #user table
@@ -25,6 +27,8 @@ class User(Base):
     id = Column(Integer, primary_key=True)
     username = Column(String, unique=True, nullable=False)
     password = Column(String, nullable=False)
+
+    progression_index = Column(Integer, default=0, nullable=False)
 
     goals = relationship("Goal", back_populates="user", foreign_keys="Goal.user_id")
     bosses = relationship("Boss", back_populates="user")
@@ -91,6 +95,16 @@ class Task(Base):
     def __repr__(self):
         return f"<Task(description={self.description}, stage={self.difficulty_stage} goal_id{self.goal_id})>"
 
+class CompletedTask(Base):
+    __tablename__= "completed_tasks"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    title = Column(String, nullable=False)
+    difficulty = Column(Integer, nullable=False)
+    completed_at = Column(DateTime, server_default=func.now())
+
+    user = relationship("User")
 
 def get_default_boss(db):
     boss = db.query(Boss).filter(Boss.name =="Sensei Wu").first()

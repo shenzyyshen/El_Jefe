@@ -162,31 +162,34 @@
     <h2>Dashboard</h2>
     <a href="/goal_manager/{{user.id}}"> Manage Goals</a>
     <a href="/boss_manager/{{user.id}}"> Boss Training </a>
-    <a href="#"> AI insight</a>
+    <a href="/dashboard/finished_tasks/{{user.id}}"> Finished Tasks</a>
     <a href="#"> Journal</a>
-    <a href="#"> Productivity stats</a>
     <a href="#"> Settings</a>
   </div>
 
   <div class="main-content">
-  <h1>Welcome, {{ user.username }}</h1>
+  <h1>Welcome, {{ user.username }} </h1>
     <p>Your current Tasks:</p>
 
-          {% if tasks %}
-            {% for task, goal in tasks %}
-              <div class="task-card" style="border-left: 6px solid {{ goal.color }};">
-                <p>{{ task.description }}</p>
-                <p class="boss">From Goal: <strong>{{ goal.title }}</strong> | Boss: {{goal.boss }} </p>
-
-                <input type="checkbox" {% if task.completed %}checked{% endif %}
-                       onchange="toggleTask({{ task.id }}, this.checked)">
-              </div>
-            {% endfor %}
-          {% else %}
-            <p>No tasks, create a goal from your
-              <a href="/goal_manager/{{ user.id }}" style="color:#38bdf8;">Goal Manager</a>
+    <div>
+      {% if tasks %}
+        {% for task, goal in tasks %}
+          <div id="task-card-{{ task.id}}" class="task-card" style="border-left: 6px solid {{ goal.color }};">
+            <p>{{ task.description }}</p>
+            <p class="boss">
+              From Goal: <strong>{{ goal.title }}</strong> | Boss: {{goal.boss }}
             </p>
-          {% endif %}
+
+            <input type="checkbox"
+                   {% if task.completed %}checked{% endif %}
+                   onchange="toggleTask({{ task.id }}, this.checked)">
+          </div>
+        {% endfor %}
+      {% else %}
+        <p>No tasks, create a goal from your
+          <a href="/goal_manager/{{ user.id }}" style="color:#38bdf8;">Goal Manager</a>
+        </p>
+      {% endif %}
 
 
   <footer>
@@ -215,11 +218,26 @@
     }
 
     async function toggleTask(taskId, done) {
-      const res = await fetch(`/tasks/${taskId}/complete_toggle`,{
+      const response = await fetch(`/tasks/${taskId}/complete_toggle`,{
         method: "PATCH",
-        headers: {"Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json"
+        },
         body: JSON.stringify({completed: done })
       });
+
+      if(!response.ok) {
+        alert("Error: Could not toggle task.");
+        return;
+      }
+      const result = await response.json();
+
+      const card = document.getElementById(`task-${taskId}`);
+      if (card){
+        card.style.transition = "opacity 0.3s";
+        card.style.opacity = 0;
+        setTimeout(() => card.remove(), 300);
+      }
     }
   </script>
 </body>

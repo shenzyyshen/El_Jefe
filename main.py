@@ -23,6 +23,7 @@ from fastapi.responses import RedirectResponse
 from core import database
 from routers import models, login_signup, goal_manager, dashboard, tasks, boss_manager
 
+
 """
 DB Table 
 """
@@ -46,6 +47,8 @@ app.include_router(dashboard.router)
 app.include_router(tasks.router)
 
 app.include_router(boss_manager.router)
+
+
 
 """
 Root Route

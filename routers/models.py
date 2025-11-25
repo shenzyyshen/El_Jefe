@@ -54,6 +54,15 @@ class Boss(Base):
     goals = relationship("Goal", back_populates="boss_obj")
 
 
+def get_default_boss(db):
+    boss = db.query(Boss).filter(Boss.name =="Sensei Wu").first()
+    if not boss:
+        boss = Boss(name="Sensei Wu", strictness=5, description="Your are a wise mentor.")
+        db.add(boss)
+        db.commit()
+        db.refresh(boss)
+    return boss
+
 #goal table
 class Goal(Base):
     __tablename__= "goals"
@@ -106,11 +115,18 @@ class CompletedTask(Base):
 
     user = relationship("User")
 
-def get_default_boss(db):
-    boss = db.query(Boss).filter(Boss.name =="Sensei Wu").first()
-    if not boss:
-        boss = Boss(name="Sensei Wu", strictness=5, description="Your are a wise mentor.")
-        db.add(boss)
-        db.commit()
-        db.refresh(boss)
-    return boss
+
+class JournalEntry(Base):
+    __tablename__ = "journal_entries"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+
+    content = Column(String, nullable=False)
+    ai_response = Column(String, nullable=True)
+
+    related_goal_id = Column(Integer, ForeignKey("goals.id"), nullable=True)
+    related_task_id = Column(Integer, ForeignKey("task.id"), nullable=True)
+    assigned_boss_id = Column(Integer, ForeignKey("bosses.id"), nullable=True)
+
+    created_at = Column(DateTime, server_defualt=func.now())

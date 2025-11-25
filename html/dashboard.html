@@ -176,8 +176,11 @@
         {% for task, goal in tasks %}
           <div id="task-card-{{ task.id}}" class="task-card" style="border-left: 6px solid {{ goal.color }};">
             <p>{{ task.description }}</p>
+
             <p class="boss">
-              From Goal: <strong>{{ goal.title }}</strong> | Boss: {{goal.boss }}
+              From Goal:
+              <strong>{{ goal.title }}</strong>
+              | Boss: {{goal.boss_obj.name }}
             </p>
 
             <input type="checkbox"
@@ -185,6 +188,7 @@
                    onchange="toggleTask({{ task.id }}, this.checked)">
           </div>
         {% endfor %}
+
       {% else %}
         <p>No tasks, create a goal from your
           <a href="/goal_manager/{{ user.id }}" style="color:#38bdf8;">Goal Manager</a>

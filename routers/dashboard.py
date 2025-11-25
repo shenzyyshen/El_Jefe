@@ -33,7 +33,6 @@ def dashboard(request: Request, user_id: int, db: Session = Depends(get_db)):
     if not user:
         raise HTTPException(status_code=404, detail="user not found")
 
-#get all goal
     goals = db.query(models.Goal).filter(models.Goal.user_id == user_id).all()
     visible_tasks = []
 
@@ -49,8 +48,8 @@ def dashboard(request: Request, user_id: int, db: Session = Depends(get_db)):
             continue
 
         #Only show the lowest difficulty stage tasks (max 5)
-        stages_remaining = {t.difficulty_stage for t in goal_tasks}
-        current_stage = min(stages_remaining)
+        stages_present = {t.difficulty_stage for t in goal_tasks}
+        current_stage = min(stages_present)
         stage_tasks = [t for t in goal_tasks if t.difficulty_stage == current_stage][:5]
 
         for task in stage_tasks:
@@ -104,6 +103,10 @@ def finished_tasks(user_id: int, request: Request, db: Session = Depends(get_db)
         .order_by(models.CompletedTask.completed_at.desc())
         .all()
     )
+
+    goals= db.query(models.Task).filter(models.Task.goal_id == user.id
+        ).order_by(models.Task.difficulty_stage.asc()).all()
+
 
     return templates.TemplateResponse(
         "finished_tasks.html",

@@ -11,7 +11,7 @@ Relationship-
     -one user - many goals
     -one goal - many task
 """
-from sqlalchemy import Column, Integer, String, ForeignKey, Boolean, DateTime, func
+from sqlalchemy import Column, Integer, String, ForeignKey, Boolean, DateTime, func, Text
 from sqlalchemy.orm import relationship
 from core.database import Base
 from datetime import datetime
@@ -113,20 +113,24 @@ class CompletedTask(Base):
     difficulty = Column(Integer, nullable=False)
     completed_at = Column(DateTime, server_default=func.now())
 
-    user = relationship("User")
+    user = relationship("User", backref="completed_tasks")
 
 
 class JournalEntry(Base):
     __tablename__ = "journal_entries"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"),nullable=False)
+    content = Column(Text, nullable=False)
+    ai_response = Column(Text, nullable=True)
 
-    content = Column(String, nullable=False)
-    ai_response = Column(String, nullable=True)
-
+#goals and taska plural table name
     related_goal_id = Column(Integer, ForeignKey("goals.id"), nullable=True)
-    related_task_id = Column(Integer, ForeignKey("task.id"), nullable=True)
+    related_task_id = Column(Integer, ForeignKey("tasks.id"), nullable=True)
     assigned_boss_id = Column(Integer, ForeignKey("bosses.id"), nullable=True)
+    created_at = Column(DateTime, server_default=func.now())
 
-    created_at = Column(DateTime, server_defualt=func.now())
+    goal = relationship("Goal", foreign_keys=[related_goal_id],backref="journal_entries")
+    task = relationship("Task", foreign_keys=[related_task_id],backref="journal_entries")
+    boss = relationship("Boss", foreign_keys=[assigned_boss_id],backref="journal_entries")
+    user = relationship("User", foreign_keys=[user_id],backref="journal_entries")

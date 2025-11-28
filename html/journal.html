@@ -120,7 +120,8 @@
     </div>
 
     <div class="input-area">
-        <form class="input-box" method="POST" action="/journal/{{ user_id }}/add">
+        <form class="input-box" method="POST" action="/journal/add">
+            <input type="hidden" name="user_id" value="{{ user_id }}">
             <textarea name="content" placeholder="Write your journal entry..."></textarea>
             <button type="submit">Send</button>
         </form>

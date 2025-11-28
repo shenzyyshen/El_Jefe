@@ -84,16 +84,21 @@ def journal_default(request: Request, db: Session = Depends(get_db)):
     )
 
 @router.get("/{user_id}", response_class=HTMLResponse)
-def journal_page(request: Request, user_id: int, db: Session= Depends(get_db)):
+def journal_page(request: Request, user_id: int, db: Session = Depends(get_db)):
     entries = journal_history(db)
     return templates.TemplateResponse(
         "journal.html",
         {"request":request, "user_id": user_id, "entries": entries}
     )
 
-@router.post("/{user_id}/add", response_class=HTMLResponse)
-def add_journal_entry(request:Request, user_id: int, entry_text: str = Form(...), db: Session = Depends(get_db)):
-    write_journal_entry(entry_text, db)
+@router.post("/add", response_class=HTMLResponse)
+def add_journal_entry(
+        request: Request,
+        user_id: int= Form(...),
+        content: str = Form(...),
+        db: Session = Depends(get_db),
+):
+    write_journal_entry(content, db)
     entries = journal_history(db)
     return templates.TemplateResponse(
         "journal.html",

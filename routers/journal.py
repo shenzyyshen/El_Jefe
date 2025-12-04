@@ -1,14 +1,18 @@
 from fastapi import APIRouter, Depends, Request, Form
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
-
-
 from sqlalchemy.orm import Session
+
 from core.database import SessionLocal
 from routers import models
 
+from services.ai_service import client as ai_client
+from dotenv import load_dotenv
+
+load_dotenv()
 router = APIRouter(prefix="/journal", tags=["Journal"])
 templates = Jinja2Templates(directory="html")
+
 
 def get_db():
     db = SessionLocal()
@@ -18,93 +22,124 @@ def get_db():
         db.close()
 
 
-def detect_related_goal_task(db: Session, text: str):
-    text_lower = text.lower()
-    goal = db.query(models.Goal).filter(models.Goal.title.ilike(f"%{text_lower}%")).first()
-    task = db.query(models.Task).filter(models.Task.description.ilike(f"%{text_lower}%")).first()
-    return goal, task
-
-
-def boss_response(goal, task, boss, entry_text: str):
-    name=boss.name if boss else "Your Boss"
-
-    if task:
-        return (
-            f"{name}: Your making progress on '{goal.goal_name}'."
-            f"What is the next action you can take on it, that feels achievable?"
-        )
-    if goal:
-        return (
-            f"{name}: your making progress on ' {goal.goal_name}'."
-            f"What part feels like the hardest right now ?"
-        )
-    return f"{name}: I hear you. Tell me more."
-
-
-
-def write_journal_entry(content: str, db: Session = Depends(get_db)):
-    user_id = 1
-    goal, task = detect_related_goal_task(db, content)
-
-    if goal:
-        boss = db.query(models.Boss).filter(models.Boss.id == goal.boss_id).first()
-    elif task:
-        goal = db.query(models.Goal).filter(models.Goal.id == task.goal_id).first()
-        boss = db.query(models.Boss).filter(models.Boss.id == goal.boss_id).first()
-    else:
-        boss = db.query(models.Boss).first()
-
-    ai_reply = boss_response(goal, task, boss, content)
-
-    entry = models.JournalEntry(
-        user_id=user_id,
-        content=content,
-        related_goal_id=goal.id if goal else None,
-        related_task_id=task.id if task else None,
-        assigned_boss_id=boss.id if boss else None,
-        ai_response=ai_reply,
+def journal_history(db: Session, user_id: int):
+    return (
+            db.query(models.JournalEntry)
+            .filter(models.JournalEntry.user_id == user_id)
+            .order_by(models.JournalEntry.created_at)
+            .all()
     )
 
-    db.add(entry)
-    db.commit()
-    db.refresh(entry)
-    return entry
-
-def journal_history(db: Session):
-    return db.query(models.JournalEntry).order_by(models.JournalEntry.created_at).all()
-
-#routes
-@router.get("/", response_class=HTMLResponse)
-def journal_default(request: Request, db: Session = Depends(get_db)):
-    default_user_id = 1
-    entries = journal_history(db)
-    return templates.TemplateResponse(
-        "journal.html",
-        {"request": request, "user_id": default_user_id, "entries": entries}
-    )
+#---page routes ----
 
 @router.get("/{user_id}", response_class=HTMLResponse)
-def journal_page(request: Request, user_id: int, db: Session = Depends(get_db)):
-    entries = journal_history(db)
+def journal_page(
+        request: Request,
+        user_id: int,
+        db: Session = Depends(get_db)
+):
+
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    entries = journal_history(db, user_id)
+
     return templates.TemplateResponse(
         "journal.html",
-        {"request":request, "user_id": user_id, "entries": entries}
+        {
+            "request":request,
+            "user": user,
+            "user_id": user_id,
+            "entries": entries
+
+        },
     )
+
+#---submit entry----
 
 @router.post("/add", response_class=HTMLResponse)
 def add_journal_entry(
         request: Request,
-        user_id: int= Form(...),
+        user_id: int = Form(...),
         content: str = Form(...),
         db: Session = Depends(get_db),
 ):
-    write_journal_entry(content, db)
-    entries = journal_history(db)
+    new_entry = models.JournalEntry(
+        user_id = user_id,
+        content = content
+    )
+    db.add(new_entry)
+    db.commit()
+    db.refresh(new_entry)
+
+    try:
+        reply = ai_client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages = [
+                {"role": "system", "content": "You are my secret diary. Stern, Reflective, Empathetic giving the best real-world advice to help me reach my goals."},
+                {"role": "user", "content": content}
+            ]
+        )
+
+   # ai_answer = reply.choices[0].message.content
+
+    #save ai reply
+        new_entry.ai_response = reply.choices[0].message["content"]
+        db.commit()
+    except Exception as e:
+        new_entry.ai_response = f"AI reply failed: {e}"
+        db.commit()
+
+    #reload page
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    entries = journal_history(db, user_id)
+
     return templates.TemplateResponse(
         "journal.html",
-        {"request": request, "user_id": user_id, "entries": entries}
+        {
+            "request": request,
+            "user": user,
+            "user_id": user_id,
+            "entries": entries
+        }
     )
 
+
+#----default routes
+@router.get("/", response_class=HTMLResponse)
+def journal_default(request: Request, db: Session = Depends(get_db)):
+    default_user_id = 1
+
+    user = db.query(models.User).filter(models.User.id == default_user_id).first()
+    entries = journal_history(db, default_user_id)
+
+    return templates.TemplateResponse(
+        "journal.html",
+        {
+            "request": request,
+            "user": user,
+            "user_id": default_user_id,
+            "entries": entries
+        },
+    )
+
+#----AI endpoint
+
+@router.post("/{user_id}/ai")
+async def journal_ai(user_id: int, request: Request):
+    data = await request.json()
+    text = data.get("text", "")
+
+    messages = [
+        {"role": "system","content":"you are my secret diary. Stern, Reflective, Empathetic giving the best real-world advice to help me reach my goals."},
+        {"role": "user", "content": text}
+    ]
+
+    reply = ai_client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages= messages
+    )
+    ai_text = reply.choices[0].message["content"]
+
+    return{"reply": ai_text}
 
 
 

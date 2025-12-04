@@ -76,13 +76,12 @@ def add_journal_entry(
             messages = [
                 {"role": "system", "content": "You are my secret diary. Stern, Reflective, Empathetic giving the best real-world advice to help me reach my goals."},
                 {"role": "user", "content": content}
-            ]
+            ],
         )
-
-   # ai_answer = reply.choices[0].message.content
+        ai_answer = reply.choices[0].message.content
 
     #save ai reply
-        new_entry.ai_response = reply.choices[0].message["content"]
+        new_entry.ai_response = reply.choices[0].message.content
         db.commit()
     except Exception as e:
         new_entry.ai_response = f"AI reply failed: {e}"

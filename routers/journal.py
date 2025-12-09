@@ -7,6 +7,7 @@ from core.database import SessionLocal
 from routers import models
 
 from services.ai_service import client as ai_client
+from services.ai_service import generate_journal_reply
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -71,18 +72,17 @@ def add_journal_entry(
     db.refresh(new_entry)
 
     try:
-        reply = ai_client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages = [
-                {"role": "system", "content": "You are my secret diary. Stern, Reflective, Empathetic giving the best real-world advice to help me reach my goals."},
-                {"role": "user", "content": content}
-            ],
-        )
-        ai_answer = reply.choices[0].message.content
+        ai_answer = generate_journal_reply(user_id, content, db)
+        new_entry.ai_response = ai_answer
+        db.commit()
+    except Exception as e:
+        new_entry.ai_response = f"AI reply failed: {e}"
+        db.commit()
 
     #save ai reply
-        new_entry.ai_response = reply.choices[0].message.content
+        new_entry.ai_response = ai_answer
         db.commit()
+        
     except Exception as e:
         new_entry.ai_response = f"AI reply failed: {e}"
         db.commit()

@@ -117,7 +117,7 @@ def generate_journal_reply(user_id:int, journal_text: str, db: Session):
 
         task_info =[
             {
-                "description": tasks.descripption,
+                "description": tasks.description,
                 "completed": tasks.completed,
                 "stage": tasks.difficulty_stage,
             }

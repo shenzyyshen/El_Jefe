@@ -79,22 +79,21 @@ def add_journal_entry(
         new_entry.ai_response = f"AI reply failed: {e}"
         db.commit()
 
-    #save ai reply
+    #----save ai reply
         new_entry.ai_response = ai_answer
         db.commit()
-        
+
     except Exception as e:
         new_entry.ai_response = f"AI reply failed: {e}"
         db.commit()
 
-    #reload page
+    #-----reload page
     user = db.query(models.User).filter(models.User.id == user_id).first()
     entries = journal_history(db, user_id)
 
     return templates.TemplateResponse(
         "journal.html",
-        {
-            "request": request,
+        {         "request": request,
             "user": user,
             "user_id": user_id,
             "entries": entries

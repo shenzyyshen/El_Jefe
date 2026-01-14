@@ -29,29 +29,48 @@ El Jefe is a FastAPI-powered productivity and journaling app that combines **goa
 
 ## 📁 Project Structure
 
-```
-el jefe/
+el-jefe/
+│
 ├── core/
-│   └── database.py
-├── routers/
-│   ├── login_signup.py
-│   ├── journal.py
-│   ├── goal_manager.py
-│   ├── tasks.py
-│   ├── boss_manager.py
-│   └── models.py
-├── services/
-│   └── ai_service.py
+│   ├── config.py          # App configuration & environment settings
+│   ├── database.py        # SQLAlchemy engine, session, and DB setup
+│   └── schemas.py         # Pydantic schemas
+│
 ├── html/
-│   └── *.html
-├── migrations/
-├── main.py
-├── init_db.py
-├── alembic.ini
-├── eljefe.db
-├── .env
-└── README.md
-```
+│   ├── boss_manager.html
+│   ├── dashboard.html
+│   ├── finished_tasks.html
+│   ├── goal_manager.html
+│   ├── journal.html
+│   ├── login_signup.html
+│   └── profile.html
+│
+├── routers/
+│   ├── __init__.py
+│   ├── boss_manager.py    # Boss logic & routing
+│   ├── dashboard.py       # Dashboard routes
+│   ├── goal_manager.py    # Goal creation & management
+│   ├── goals.py           # Goal-related logic
+│   ├── journal.py         # Journal + AI responses
+│   ├── login_signup.py    # Authentication routes
+│   ├── models.py          # SQLAlchemy models
+│   ├── profile.py         # User profile routes
+│   └── tasks.py           # Task management routes
+│
+├── services/
+│   ├── __init__.py
+│   ├── ai_service.py      # OpenAI interaction & AI logic
+│   └── progression.py    # Goal/task progression logic
+│
+├── .env                   # Environment variables (not committed)
+├── .gitignore             # Git ignore rules
+├── eljefe.db              # SQLite database
+├── init_db.py             # Database initialization
+├── main.py                # FastAPI app entry point
+├── requirements.txt       # Python dependencies
+└── README.md              # Project documentation
+
+
 
 ---
 

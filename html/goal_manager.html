@@ -142,6 +142,7 @@
         {% set active = true %}
 
         <div class="goal-card" style="border-left: 6px solid;{{ goal.color }};">
+
         <!--goal header -->
           <strong>{{ goal.title }}</strong>
           <div> Boss: {{ goal.boss_obj.name if goal.boss_obj else "None" }}</div>
@@ -183,6 +184,7 @@
       {% for goal in goals %}
         {% if goal.completed %}
           {% set any_completed = true %}
+
           <div class="goal-card" style="opacity: 0.9;">
             <strong>{{ goal.title }}</strong><br>
             {{ goal.description or ''}}
@@ -190,7 +192,9 @@
               <form action="/goal_manager/ {{ user.id }}/complete/{{ goal.id }}" method="post">
                 <button type="submit">Mark Complete</button>
               </form>
+
             </div>
+
           {% endif %}
         {% endfor %}
 

@@ -8,10 +8,11 @@ Manage user's goals:
 - Display all goals (active + completed)
 """
 
-from fastapi import FastAPI, HTTPException, APIRouter, Depends, Form, Request
+from fastapi import  APIRouter, Depends, Form, Request, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session, selectinload
+
 from core import database
 from routers import models
 from services import ai_service
@@ -102,27 +103,47 @@ def edit_goal(user_id: int, goal_id: int, title: str =Form(...), description: st
         db.commit()
     return RedirectResponse(url=f"/goal_manager/{user_id}", status_code=303)
 
-@router.post("/complete/{goal_id}")
-def complete_goal(goal_id: int, db: Session = Depends(get_db)):
-    goal = db.query(models.Goal).filter(models.Goal.id == goal_id).first()
+@router.post("/{user_id}/complete/{goal_id}")
+def complete_goal(
+        user_id: int,
+        goal_id: int,
+        db: Session = Depends(get_db)
+):
+    goal = (
+        db.query(models.Goal)
+        .filter(
+            models.Goal.id == goal_id,
+            models.Goal.user_id == user_id
+        )
+        .first()
+    )
 
     if not goal:
         raise HTTPException(status_code=404, detail="Goal not found")
 
-        goal.completed = True
-        db.commit()
+    goal.completed = True
+    db.commit()
 
-        return RedirectResponse(
-            url=f"/goal_manager/{goal.user_id}",
-            status_code=303
+    return RedirectResponse(
+        url=f"/goal_manager/{user_id}",
+        status_code=303
         )
 
 @router.post("/{user_id}/delete/{goal_id}")
-def delete_goal(user_id: int, goal_id: int, db: Session = Depends(get_db)):
-    goal = db.query(models.Goal).filter(models.Goal.id == goal_id).first()
+def delete_goal(
+        user_id: int,
+        goal_id: int,
+        db: Session = Depends(get_db)
+):
+    goal = (
+        db.query(models.Goal)
+        .filter(models.Goal.id == goal_id, models.Goal.user_id == user_id)
+        .first()
+    )
 
     if not goal:
         raise HTTPException(status_code=404, detail="Goal not found")
+
     db.delete(goal)
     db.commit()
 

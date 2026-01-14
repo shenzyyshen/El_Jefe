@@ -153,7 +153,7 @@
 
           <!--mark complete -->
           <form action="/goal_manager/{{ user.id }}/complete/{{ goal.id }}" method="post">
-            <button type="submit>"/>Mark complete</button>
+            <button type="submit">Mark Complete</button>
           </form>
 
           <!--Edit-->
@@ -164,7 +164,7 @@
           </form>
 
           <!--Delete-->
-          <form action="/goal_manager/{{ user.id }}/delete|{{ goal.id }}" method="post">
+          <form action="/goal_manager/{{ user.id }}/delete/{{ goal.id }}" method="post">
             <button type="submit" class="delete">Delete</button>
           </form>
 
@@ -187,8 +187,8 @@
             <strong>{{ goal.title }}</strong><br>
             {{ goal.description or ''}}
 
-              <form action="/goal_manager/ {{ user.id }}/delete/{{ goal.id }}" method="post">
-                <button type="submit" class="delete"> Remove</button>
+              <form action="/goal_manager/ {{ user.id }}/complete/{{ goal.id }}" method="post">
+                <button type="submit">Mark Complete</button>
               </form>
             </div>
           {% endif %}

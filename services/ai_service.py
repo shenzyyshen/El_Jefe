@@ -107,29 +107,29 @@ def generate_journal_reply(user_id:int, journal_text: str, db: Session):
     #---pull goal + tasks from db ---
     goals = db.query(models.Goal).filter(models.Goal.user_id == user_id).all()
 
-    goal_list = []
-    for goal in goals:
-        tasks = (
-            db.query(models.Task)
-            .filter(models.Task.goal_id == goal.id)
-            .all()
-        )
+    all_tasks = []
+    context_lines = []
 
-        task_info =[
-            {
-                "description": tasks.description,
-                "completed": tasks.completed,
-                "stage": tasks.difficulty_stage,
-            }
-            for tasks in tasks
-        ]
-        goal_list.append(
-            {
-                "title": goal.title,
-                "description": goal.description,
-                "tasks": task_info,
-            }
-        )
+    for goal in goals:
+        context_lines.append(f"-Goal: {goal.title} (completed: {goal.completed})")
+        tasks = db.query(models.Task).filter(models.Task.goal_id == goal.id).all()
+        for task in tasks:
+            status = "completed" if task.completed else "incomplete"
+            context_lines.append(f"  * Task: {task.description} ({status})")
+            all_tasks.append(task)
+
+        context_text = "\n".join(context_lines)
+
+        journal_lower = journal_text.lower()
+        mentioned_tasks = []
+        for task in all_tasks:
+            if task.description.lower() in journal_lower:
+                mentioned_tasks.append(task.description)
+
+        if mentioned_tasks:
+            mention_text = "The user mentioned these tasks in their entry: " + ",".join(mentioned_tasks)
+        else:
+            mention_text = "No specific tasks were explicitly mentioned in the entry."
 
         #---AI prompt---
         system_prompt = """
@@ -151,8 +151,11 @@ keep it chat like and easy to read.
     user_prompt = f"""
 User journal entry:
 {journal_text}
+
 User goals and tasks:
-{goal_list}
+{context_text}
+
+{mention_text}
 """
     #---OPENAI call ---
     try: 
